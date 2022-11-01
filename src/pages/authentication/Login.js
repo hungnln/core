@@ -75,7 +75,7 @@ export default function Login() {
 
       <Container maxWidth="sm">
         <ContentStyle>
-          <Stack direction="row" alignItems="center" sx={{ mb: 5 }}>
+          <Stack direction="row" alignItems="center" sx={{ mb: 2 }}>
             <Box sx={{ flexGrow: 1 }}>
               <Typography variant="h4" gutterBottom>
                 Sign in to Minimal
@@ -89,10 +89,10 @@ export default function Login() {
           </Stack>
 
           {method === 'firebase' && <AuthFirebaseSocials />}
-
-          <Alert severity="info" sx={{ mb: 3 }}>
+          {/* <AuthFirebaseSocials /> */}
+          {/* <Alert severity="info" sx={{ mb: 3 }}>
             Use email : <strong>demo@minimals.cc</strong> / password :<strong>&nbsp;demo1234</strong>
-          </Alert>
+          </Alert> */}
 
           {method !== 'auth0' ? (
             <LoginForm />

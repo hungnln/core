@@ -1,17 +1,17 @@
 import PropTypes from 'prop-types';
 import { createContext, useEffect, useReducer, useState } from 'react';
-import firebase from 'firebase/app';
+import firebase from 'firebase/compat/app';
+import { initializeApp } from "firebase/app";
 import 'firebase/auth';
 import 'firebase/firestore';
 import { firebaseConfig } from '../config';
-
 // ----------------------------------------------------------------------
 
 const ADMIN_EMAILS = ['demo@minimals.cc'];
-
 if (!firebase.apps.length) {
   firebase.initializeApp(firebaseConfig);
-  firebase.firestore();
+  // const auth = getAuth(firebase)
+  // const messaging = firebase.messaging();
 }
 
 const initialState = {
@@ -57,23 +57,15 @@ function AuthProvider({ children }) {
     () =>
       firebase.auth().onAuthStateChanged((user) => {
         if (user) {
-          const docRef = firebase.firestore().collection('users').doc(user.uid);
-          docRef
-            .get()
-            .then((doc) => {
-              if (doc.exists) {
-                setProfile(doc.data());
-              }
-            })
-            .catch((error) => {
-              console.error(error);
-            });
+          console.log('login');
 
           dispatch({
             type: 'INITIALISE',
             payload: { isAuthenticated: true, user }
           });
         } else {
+          console.log('chưa login');
+
           dispatch({
             type: 'INITIALISE',
             payload: { isAuthenticated: false, user: null }

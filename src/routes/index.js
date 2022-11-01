@@ -84,6 +84,17 @@ export default function Router() {
         { path: 'booking', element: <GeneralBooking /> },
 
         {
+          path: 'order',
+          children: [
+            { element: <Navigate to="/dashboard/order/list" replace /> },
+            { path: 'list', element: <OrderList /> },
+            { path: 'new', element: <OrderCreate /> },
+            { path: 'edit/:id', element: <OrderCreate /> },
+          ]
+        },
+
+
+        {
           path: 'e-commerce',
           children: [
             { element: <Navigate to="/dashboard/e-commerce/shop" replace /> },
@@ -231,6 +242,13 @@ const Register = Loadable(lazy(() => import('../pages/authentication/Register'))
 const ResetPassword = Loadable(lazy(() => import('../pages/authentication/ResetPassword')));
 const VerifyCode = Loadable(lazy(() => import('../pages/authentication/VerifyCode')));
 // Dashboard
+
+const OrderCreate = Loadable(lazy(() => import('../pages/dashboard/order/OrderCreate')))
+const OrderList = Loadable(lazy(() => import('../pages/dashboard/order/OrderList')))
+
+
+
+
 const GeneralApp = Loadable(lazy(() => import('../pages/dashboard/GeneralApp')));
 const GeneralEcommerce = Loadable(lazy(() => import('../pages/dashboard/GeneralEcommerce')));
 const GeneralAnalytics = Loadable(lazy(() => import('../pages/dashboard/GeneralAnalytics')));

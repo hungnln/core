@@ -1,12 +1,21 @@
 import axios from 'axios';
 
 // ----------------------------------------------------------------------
+export const DOMAIN = 'https://convenient-way.azurewebsites.net'
+export const ACCESSTOKEN = 'accessToken'
+const axiosInstance = axios.create({
+  baseURL: DOMAIN,
+  timeout: 30000,
+});
 
-const axiosInstance = axios.create();
+axiosInstance.interceptors.request.use((config) => {
+  const token = localStorage.getItem(ACCESSTOKEN)
+  config.headers = {
+    ...config.headers,
+    ['Authorization']: token ? `Bearer ${token}` : '',
 
-axiosInstance.interceptors.response.use(
-  (response) => response,
-  (error) => Promise.reject((error.response && error.response.data) || 'Something went wrong')
-);
+  }
+  return config;
+}, (error) => { return Promise.reject(error) })
 
 export default axiosInstance;

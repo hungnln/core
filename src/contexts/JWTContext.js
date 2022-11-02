@@ -1,9 +1,15 @@
-import { createContext, useEffect, useReducer } from 'react';
+import { createContext, useEffect, useReducer, useState } from 'react';
 import PropTypes from 'prop-types';
 // utils
 import axios from '../utils/axios';
 import { isValidToken, setSession } from '../utils/jwt';
-
+import firebase from 'firebase/compat/app';
+import 'firebase/compat/auth';
+import { firebaseConfig } from 'src/config';
+import { MIconButton } from 'src/components/@material-extend';
+import { Icon } from '@mui/material';
+import closeFill from '@iconify/icons-eva/close-fill';
+import { useSnackbar } from 'notistack';
 // ----------------------------------------------------------------------
 
 const initialState = {
@@ -11,7 +17,9 @@ const initialState = {
   isInitialized: false,
   user: null
 };
-
+if (!firebase.apps.length) {
+  firebase.initializeApp(firebaseConfig);
+}
 const handlers = {
   INITIALIZE: (state, action) => {
     const { isAuthenticated, user } = action.payload;
@@ -54,7 +62,8 @@ const AuthContext = createContext({
   method: 'jwt',
   login: () => Promise.resolve(),
   logout: () => Promise.resolve(),
-  register: () => Promise.resolve()
+  register: () => Promise.resolve(),
+  loginWithGoogle: () => Promise.resolve(),
 });
 
 AuthProvider.propTypes = {
@@ -62,27 +71,105 @@ AuthProvider.propTypes = {
 };
 
 function AuthProvider({ children }) {
+  const { enqueueSnackbar, closeSnackbar } = useSnackbar();
+  // const [demo, setDemo] = useState();
   const [state, dispatch] = useReducer(reducer, initialState);
 
+
+  // useEffect(() => {
+  //   const initialize = async () => {
+  //     try {
+  //       const accessToken = window.localStorage.getItem('accessToken');
+
+  //       if (accessToken && isValidToken(accessToken)) {
+  //         setSession(accessToken);
+
+  //         const response = await axios.get('/api/account/my-account');
+  //         const { user } = response.data;
+
+  //         dispatch({
+  //           type: 'INITIALIZE',
+  //           payload: {
+  //             isAuthenticated: true,
+  //             user
+  //           }
+  //         });
+  //       } else {
+  //         dispatch({
+  //           type: 'INITIALIZE',
+  //           payload: {
+  //             isAuthenticated: false,
+  //             user: null
+  //           }
+  //         });
+  //       }
+  //     } catch (err) {
+  //       console.error(err);
+  //       dispatch({
+  //         type: 'INITIALIZE',
+  //         payload: {
+  //           isAuthenticated: false,
+  //           user: null
+  //         }
+  //       });
+  //     }
+  //   };
+
+  //   initialize();
+  // }, []);
   useEffect(() => {
     const initialize = async () => {
       try {
         const accessToken = window.localStorage.getItem('accessToken');
+        console.log("check admin token", accessToken);
+        const firebaseToken = localStorage.getItem('firebaseToken')
 
         if (accessToken && isValidToken(accessToken)) {
           setSession(accessToken);
+          const x = JSON.parse(atob(accessToken.split('.')[1]))
+          console.log("check admin token", x);
+          if (x?.role === "Admin") {
+            dispatch({
+              type: 'INITIALIZE',
+              payload: {
+                isAuthenticated: true,
+                user: { role: 'Admin', displayName: 'Admin' }
+              }
+            });
+          }
+          else {
+            console.log('check  firebase');
+            // const response = await axios.get('/api/account/my-account');
+            // const { user } = response.data;
+            // const respone = await axios.post(`/api/login/firebase`, { headers: { Authorization: `Baerer ${firebaseToken}` } })
+            const account = x;
+            console.log(account, 'account');
+            if (account) {
+              dispatch({
+                type: 'INITIALIZE',
+                // xai tam
+                payload: { isAuthenticated: true, user: { role: 'Admin', displayName: 'Admin' } }
 
-          const response = await axios.get('/api/account/my-account');
-          const { user } = response.data;
 
-          dispatch({
-            type: 'INITIALIZE',
-            payload: {
-              isAuthenticated: true,
-              user
+                // payload: { isAuthenticated: true, user: { id: account.id, displayName: account.name, email: account.email, role: 'User', photoURL: account.imageURL }, isInitialized: true }
+              })
+            } else {
+              localStorage.removeItem('firebaseToken')
+              dispatch({
+                type: 'INITIALIZE',
+                payload: {
+                  isAuthenticated: false,
+                  user: null
+                }
+              });
             }
-          });
-        } else {
+
+          }
+        }
+
+        // const response = await axios.post('/api/login/admin');
+
+        else {
           dispatch({
             type: 'INITIALIZE',
             payload: {
@@ -105,19 +192,56 @@ function AuthProvider({ children }) {
 
     initialize();
   }, []);
+  const loginWithGoogle = () => {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    firebase.auth().signInWithPopup(provider)
+    firebase.auth().onAuthStateChanged((user) => {
+      if (user) {
+        user.getIdToken().then(async (token) => {
+          localStorage.setItem('firebaseToken', token)
+          setSession(token)
+          const respone = await axios.post(`/api/login/firebase`)
+          if (respone.data.statusCode === 200) {
+            const { account } = respone.data.result
+            dispatch({
+              type: 'LOGINGOOGLE',
+              payload: { user: { id: account.id, displayName: account.name, email: account.email, role: 'User', photoURL: account.imageURL } }
+            });
+          }
 
-  const login = async (email, password) => {
-    const response = await axios.post('/api/account/login', {
-      email,
+        })
+
+
+      } else {
+        dispatch({
+          type: 'INITIALIZE',
+          payload: { isAuthenticated: false, user: null }
+        });
+      }
+    })
+  };
+  const login = async (userName, password, isAdmin) => {
+    const response = await axios.post(`/api/v1.0/authorizes?isShop=${!isAdmin}&isAdmin=${isAdmin}&isShipper=false`, {
+      userName,
       password
     });
-    const { accessToken, user } = response.data;
+    console.log(response, 'test api');
+    enqueueSnackbar('Login success', {
+      variant: 'success',
+      action: (key) => (
+        <MIconButton size="small" onClick={() => closeSnackbar(key)}>
+          <Icon icon={closeFill} />
+        </MIconButton>
+      )
+    });
+    const { token, user } = response.data.data;
 
-    setSession(accessToken);
+    setSession(token);
     dispatch({
       type: 'LOGIN',
       payload: {
-        user
+        // user
+        user: isAdmin ? { role: 'Admin', displayName: 'Admin' } : { role: 'Shop', displayName: 'Shop' }
       }
     });
   };
@@ -140,14 +264,20 @@ function AuthProvider({ children }) {
     });
   };
 
+  // const logout = async () => {
+  //   setSession(null);
+  //   dispatch({ type: 'LOGOUT' });
+  // };
   const logout = async () => {
+    console.log("logout");
     setSession(null);
+    localStorage.removeItem('firebaseToken')
+    await firebase.auth().signOut();
     dispatch({ type: 'LOGOUT' });
   };
+  const resetPassword = () => { };
 
-  const resetPassword = () => {};
-
-  const updateProfile = () => {};
+  const updateProfile = () => { };
 
   return (
     <AuthContext.Provider
@@ -158,7 +288,8 @@ function AuthProvider({ children }) {
         logout,
         register,
         resetPassword,
-        updateProfile
+        updateProfile,
+        loginWithGoogle
       }}
     >
       {children}

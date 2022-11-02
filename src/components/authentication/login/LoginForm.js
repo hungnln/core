@@ -25,30 +25,23 @@ export default function LoginForm() {
   const isMountedRef = useIsMountedRef();
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
   const [showPassword, setShowPassword] = useState(false);
-
+  const [isAdmin, setIsAdmin] = useState(false);
   const LoginSchema = Yup.object().shape({
-    email: Yup.string().email('Email must be a valid email address').required('Email is required'),
+    username: Yup.string().required('Username is required'),
     password: Yup.string().required('Password is required')
   });
 
   const formik = useFormik({
     initialValues: {
-      email: '',
+      username: '',
       password: '',
       remember: true
     },
     validationSchema: LoginSchema,
     onSubmit: async (values, { setErrors, setSubmitting, resetForm }) => {
       try {
-        await login(values.email, values.password);
-        enqueueSnackbar('Login success', {
-          variant: 'success',
-          action: (key) => (
-            <MIconButton size="small" onClick={() => closeSnackbar(key)}>
-              <Icon icon={closeFill} />
-            </MIconButton>
-          )
-        });
+        await login(values.username, values.password, isAdmin);
+
         if (isMountedRef.current) {
           setSubmitting(false);
         }
@@ -64,7 +57,9 @@ export default function LoginForm() {
   });
 
   const { errors, touched, values, isSubmitting, handleSubmit, getFieldProps } = formik;
-
+  const changeType = (type) => {
+    setIsAdmin(type)
+  }
   const handleShowPassword = () => {
     setShowPassword((show) => !show);
   };
@@ -72,17 +67,34 @@ export default function LoginForm() {
   return (
     <FormikProvider value={formik}>
       <Form autoComplete="off" noValidate onSubmit={handleSubmit}>
+        {isAdmin && (
+          <Stack >
+            <Link component='button' href='#' variant="subtitle2" sx={{ my: 2 }} onClick={() => changeType(false)}>
+              Login with Admin
+            </Link>
+          </Stack>
+        )}
+        {!isAdmin && (
+          <Stack >
+            <Link component='button' href='#' variant="subtitle2" sx={{ my: 2 }} onClick={() => changeType(true)}>
+              Login with Shop
+            </Link>
+          </Stack>
+        )}
+
         <Stack spacing={3}>
           {errors.afterSubmit && <Alert severity="error">{errors.afterSubmit}</Alert>}
+
+
 
           <TextField
             fullWidth
             autoComplete="username"
-            type="email"
-            label="Email address"
-            {...getFieldProps('email')}
-            error={Boolean(touched.email && errors.email)}
-            helperText={touched.email && errors.email}
+            type="text"
+            label="Username"
+            {...getFieldProps('username')}
+            error={Boolean(touched.username && errors.username)}
+            helperText={touched.username && errors.username}
           />
 
           <TextField

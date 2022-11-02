@@ -19,9 +19,10 @@ import {
     Container,
     Typography,
     TableContainer,
-    TablePagination
+    TablePagination,
+    Tab,
+    Tabs
 } from '@mui/material';
-import { useDispatch, useSelector } from 'react-redux';
 import useSettings from 'src/hooks/useSettings';
 import { deleteOrder, getOrderList } from 'src/redux/slices/order';
 import { PATH_DASHBOARD } from 'src/routes/paths';
@@ -31,6 +32,7 @@ import HeaderBreadcrumbs from 'src/components/HeaderBreadcrumbs';
 import { OrderListHead, OrderListToolbar, OrderMoreMenu } from 'src/components/_dashboard/order/list';
 import Label from 'src/components/Label';
 import SearchNotFound from 'src/components/SearchNotFound';
+import { useDispatch, useSelector } from 'src/redux/store';
 // redux
 
 // routes
@@ -86,7 +88,7 @@ export default function OrderList() {
     const { themeStretch } = useSettings();
     const theme = useTheme();
     const dispatch = useDispatch();
-    const { orderList } = useSelector((state) => state.order);
+    const { orderList } = useSelector((state) => state.order)
     const [page, setPage] = useState(0);
     const [order, setOrder] = useState('asc');
     const [selected, setSelected] = useState([]);
@@ -151,6 +153,11 @@ export default function OrderList() {
 
     const isOrderNotFound = filteredOrders.length === 0;
 
+    const [value, setValue] = useState('one');
+    const handleChange = (event, newValue) => {
+        setValue(newValue);
+    };
+
     return (
         <Page title="Order: List | Minimal-UI">
             <Container maxWidth={themeStretch ? false : 'lg'}>
@@ -174,6 +181,28 @@ export default function OrderList() {
                 />
 
                 <Card>
+                    <Tabs
+                        value={value}
+                        onChange={handleChange}
+                        textColor="secondary"
+                        indicatorColor="secondary"
+                        sx={{ px: 2 }}
+                    >
+                        <Tab value="one" icon={<Label sx={{ mr: 1 }}
+                            variant={theme.palette.mode === 'light' ? 'ghost' : 'filled'}
+                            color='success'
+                        >
+                            {sentenceCase('20')}
+                        </Label>} label='All'
+                        />
+                        <Tab value="two" icon={<Label sx={{ mr: 1 }}
+                            variant={theme.palette.mode === 'light' ? 'ghost' : 'filled'}
+                            color='error'
+                        >
+                            {sentenceCase('19')}
+                        </Label>} label='Fail'
+                        />
+                    </Tabs>
                     <OrderListToolbar numSelected={selected.length} filterName={filterName} onFilterName={handleFilterByName} />
 
                     <Scrollbar>

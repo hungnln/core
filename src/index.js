@@ -78,7 +78,8 @@ ReactDOM.render(
         </PersistGate>
       </ReduxProvider>
     </HelmetProvider>
-  </SnackbarProvider>,
+  </SnackbarProvider>
+  ,
   document.getElementById('root')
 );
 

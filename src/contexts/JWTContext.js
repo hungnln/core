@@ -148,7 +148,7 @@ function AuthProvider({ children }) {
               dispatch({
                 type: 'INITIALIZE',
                 // xai tam
-                payload: { isAuthenticated: true, user: { role: 'Admin', displayName: 'Admin' } }
+                payload: { isAuthenticated: true, user: { role: 'Shop', displayName: 'Shop' } }
 
 
                 // payload: { isAuthenticated: true, user: { id: account.id, displayName: account.name, email: account.email, role: 'User', photoURL: account.imageURL }, isInitialized: true }

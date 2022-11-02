@@ -180,44 +180,44 @@ export default function NavSection({ navConfig, isShow = true, ...other }) {
   const { user } = useAuth();
   const isAdmin = user?.role === 'Admin';
   return (
-    // <Box {...other}>
-    //   {navConfig.map((list) => {
-    //     const { subheader, items } = list;
-    //     return (
-    //       <List key={subheader} disablePadding>
-    //         {isShow && <ListSubheaderStyle>{subheader}</ListSubheaderStyle>}
-    //         {items.map((item) => (
-    //           <NavItem key={item.title} item={item} isShow={isShow} />
-    //         ))}
-    //       </List>
-    //     );
-    //   })}
-    // </Box>
     <Box {...other}>
-      {isAdmin ?
-        navConfig.map((list) => {
-          const { subheader, items } = list;
-          return (
-            <List key={subheader} disablePadding>
-              {isShow && <ListSubheaderStyle>{subheader}</ListSubheaderStyle>}
-              {items.map((item) => (
-                <NavItem key={item.title} item={item} isShow={isShow} />
-              ))}
-            </List>
-          )
-        })
-        : navConfig.filter(list => list.items.isAdmin === false).map((list) => {
-          const { subheader, items } = list;
-          return (
-            <List key={subheader} disablePadding>
-              {isShow && <ListSubheaderStyle>{subheader}</ListSubheaderStyle>}
-              {items.map((item) => (
-                <NavItem key={item.title} item={item} isShow={isShow} />
-              ))}
-            </List>
-          )
-        })}
-
+      {navConfig.filter(list => list.role === user.role).map((list) => {
+        const { subheader, items } = list;
+        return (
+          <List key={subheader} disablePadding>
+            {isShow && <ListSubheaderStyle>{subheader}</ListSubheaderStyle>}
+            {items.map((item) => (
+              <NavItem key={item.title} item={item} isShow={isShow} />
+            ))}
+          </List>
+        );
+      })}
     </Box>
+    // <Box {...other}>
+    //   {isAdmin ?
+    //     navConfig.map((list) => {
+    //       const { subheader, items } = list;
+    //       return (
+    //         <List key={subheader} disablePadding>
+    //           {isShow && <ListSubheaderStyle>{subheader}</ListSubheaderStyle>}
+    //           {items.map((item) => (
+    //             <NavItem key={item.title} item={item} isShow={isShow} />
+    //           ))}
+    //         </List>
+    //       )
+    //     })
+    //     : navConfig.filter(list => list.items.isAdmin === false).map((list) => {
+    //       const { subheader, items } = list;
+    //       return (
+    //         <List key={subheader} disablePadding>
+    //           {isShow && <ListSubheaderStyle>{subheader}</ListSubheaderStyle>}
+    //           {items.map((item) => (
+    //             <NavItem key={item.title} item={item} isShow={isShow} />
+    //           ))}
+    //         </List>
+    //       )
+    //     })}
+
+    // </Box>
   );
 }

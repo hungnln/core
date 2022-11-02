@@ -86,7 +86,7 @@ export const PATH_DASHBOARD = {
   order: {
     root: path(ROOTS_DASHBOARD, '/order'),
     list: path(ROOTS_DASHBOARD, '/order/list'),
-    newOrder: path(ROOTS_DASHBOARD, '/order/new-order'),
+    newOrder: path(ROOTS_DASHBOARD, '/order/new'),
     orderById: path(ROOTS_DASHBOARD, '/order/:id'),
   }
 

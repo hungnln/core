@@ -44,6 +44,7 @@ const sidebarConfig = [
   // },
   {
     subheader: 'dashboard',
+    role: 'Admin',
     items: [
       {
         title: 'order',
@@ -57,26 +58,41 @@ const sidebarConfig = [
       }
     ]
   },
-  // MANAGEMENT
+  {
+    subheader: 'dashboard',
+    role: 'Shop',
+    items: [
+      {
+        title: 'order',
+        path: PATH_DASHBOARD.order.root,
+        icon: ICONS.blog,
+        // children: [
+        //   { title: 'posts', path: PATH_DASHBOARD.blog.posts },
+        //   { title: 'post', path: PATH_DASHBOARD.blog.postById },
+        //   { title: 'new post', path: PATH_DASHBOARD.blog.newPost }
+        // ]
+      }
+    ]
+  },  // MANAGEMENT
   // ----------------------------------------------------------------------
   {
     subheader: 'management',
     items: [
-      // // MANAGEMENT : USER
-      // {
-      //   title: 'user',
-      //   path: PATH_DASHBOARD.user.root,
-      //   icon: ICONS.user,
-      //   isAdmin: true,
-      //   children: [
-      //     { title: 'profile', path: PATH_DASHBOARD.user.profile },
-      //     { title: 'cards', path: PATH_DASHBOARD.user.cards },
-      //     { title: 'list', path: PATH_DASHBOARD.user.list },
-      //     { title: 'create', path: PATH_DASHBOARD.user.newUser },
-      //     { title: 'edit', path: PATH_DASHBOARD.user.editById },
-      //     { title: 'account', path: PATH_DASHBOARD.user.account }
-      //   ]
-      // },
+      // MANAGEMENT : USER
+      {
+        title: 'user',
+        path: PATH_DASHBOARD.user.root,
+        icon: ICONS.user,
+        role: true,
+        children: [
+          { title: 'profile', path: PATH_DASHBOARD.user.profile },
+          { title: 'cards', path: PATH_DASHBOARD.user.cards },
+          { title: 'list', path: PATH_DASHBOARD.user.list },
+          { title: 'create', path: PATH_DASHBOARD.user.newUser },
+          { title: 'edit', path: PATH_DASHBOARD.user.editById },
+          { title: 'account', path: PATH_DASHBOARD.user.account }
+        ]
+      },
       // MANAGEMENT : E-COMMERCE
       // {
       //   title: 'e-commerce',
@@ -108,26 +124,26 @@ const sidebarConfig = [
     ]
   },
 
-  // APP
   // ----------------------------------------------------------------------
-  // {
-  //   subheader: 'app',
-  //   items: [
-  //     {
-  //       title: 'mail',
-  //       path: PATH_DASHBOARD.mail.root,
-  //       icon: ICONS.mail,
-  //       info: <Label color="error">2</Label>
-  //     },
-  //     { title: 'chat', path: PATH_DASHBOARD.chat.root, icon: ICONS.chat },
-  //     { title: 'calendar', path: PATH_DASHBOARD.calendar, icon: ICONS.calendar },
-  //     {
-  //       title: 'kanban',
-  //       path: PATH_DASHBOARD.kanban,
-  //       icon: ICONS.kanban
-  //     }
-  //   ]
-  // }
+  {
+    subheader: 'app',
+    role: 'Shop',
+    items: [
+      {
+        title: 'mail',
+        path: PATH_DASHBOARD.mail.root,
+        icon: ICONS.mail,
+        info: <Label color="error">2</Label>
+      },
+      { title: 'chat', path: PATH_DASHBOARD.chat.root, icon: ICONS.chat },
+      { title: 'calendar', path: PATH_DASHBOARD.calendar, icon: ICONS.calendar },
+      {
+        title: 'kanban',
+        path: PATH_DASHBOARD.kanban,
+        icon: ICONS.kanban
+      }
+    ]
+  }
 ];
 
 export default sidebarConfig;

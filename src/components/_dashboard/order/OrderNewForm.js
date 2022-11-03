@@ -1,13 +1,12 @@
 import * as Yup from 'yup';
 import PropTypes from 'prop-types';
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { useSnackbar } from 'notistack';
 import { useNavigate } from 'react-router-dom';
 import { Field, FieldArray, Form, FormikProvider, useFormik } from 'formik';
-import eyeOffFill from '@iconify/icons-eva/eye-off-fill';
 // material
 import { DateTimePicker, DesktopDatePicker, LoadingButton } from '@mui/lab';
-import { Box, Card, Grid, Stack, Switch, TextField, Typography, FormHelperText, FormControlLabel, Paper, Divider, Button, InputAdornment, IconButton } from '@mui/material';
+import { Box, Card, Grid, Stack, Switch, TextField, Typography, FormHelperText, FormControlLabel, Paper, Divider, Button, InputAdornment, IconButton, DialogTitle } from '@mui/material';
 // utils
 import { fData } from '../../../utils/formatNumber';
 import fakeRequest from '../../../utils/fakeRequest';
@@ -17,7 +16,11 @@ import { PATH_DASHBOARD } from '../../../routes/paths';
 import Label from '../../Label';
 import { UploadAvatar } from '../../upload';
 import EditLocationAltIcon from '@mui/icons-material/EditLocationAlt';
+import AddOutlinedIcon from '@mui/icons-material/AddOutlined';
+import DeleteOutlinedIcon from '@mui/icons-material/DeleteOutlined';
 import { Icon } from '@iconify/react';
+import { DialogAnimate } from 'src/components/animate';
+import AddressNewForm from './AddressNewForm';
 // ----------------------------------------------------------------------
 
 OrderNewForm.propTypes = {
@@ -28,7 +31,11 @@ OrderNewForm.propTypes = {
 export default function OrderNewForm({ isEdit, currentOrder }) {
   const navigate = useNavigate();
   const { enqueueSnackbar } = useSnackbar();
-
+  const [currentAddress, setCurrentAddress] = useState()
+  const [isOpenModal, setOpenModal] = useState(false)
+  const handleCloseModal = () => {
+    setOpenModal(!isOpenModal);
+  };
   const NewOrderSchema = Yup.object().shape({
 
   });
@@ -36,6 +43,16 @@ export default function OrderNewForm({ isEdit, currentOrder }) {
   const formik = useFormik({
     enableReinitialize: true,
     initialValues: {
+      shopAddress: {
+        name: 'Hello',
+        address: 'Phone',
+        phone: '0939398000'
+      },
+      customerAddress: {
+        name: 'Hello',
+        address: 'Phone',
+        phone: '0939398000'
+      },
       products: [
         {
           id: '',
@@ -92,9 +109,9 @@ export default function OrderNewForm({ isEdit, currentOrder }) {
                   <Typography variant='h6' sx={{ color: 'text.secondary' }}>From:</Typography>
                   <Button variant="text" size='small' startIcon={<EditLocationAltIcon />}>Change</Button>
                 </Stack>
-                <Typography variant='subtitle2'>name</Typography>
-                <Typography variant='body2' sx={{ color: 'text.secondary', mt: 1, mb: 0.5 }}>4642 Demetris Lane Suite 407 - Edmond, AZ / 60888</Typography>
-                <Typography variant='body2' sx={{ color: 'text.secondary' }}>0939398000</Typography>
+                <Typography variant='subtitle2'>{values.shopAddress.name}</Typography>
+                <Typography variant='body2' sx={{ color: 'text.secondary', mt: 1, mb: 0.5 }}>{values.shopAddress.address}</Typography>
+                <Typography variant='body2' sx={{ color: 'text.secondary' }}>{values.shopAddress.phone}</Typography>
               </Stack>
             </Box>
 
@@ -107,7 +124,7 @@ export default function OrderNewForm({ isEdit, currentOrder }) {
                   sx={{ mb: 1 }}
                 >
                   <Typography variant='h6' sx={{ color: 'text.secondary' }}>To:</Typography>
-                  <Button variant="text" size='small' startIcon={<EditLocationAltIcon />}>Change</Button>
+                  <Button variant="text" size='small' startIcon={<EditLocationAltIcon />} onClick={handleCloseModal}>Change</Button>
                 </Stack>
                 <Typography variant='subtitle2'>name</Typography>
                 <Typography variant='body2' sx={{ color: 'text.secondary', mt: 1, mb: 0.5 }}>4642 Demetris Lane Suite 407 - Edmond, AZ / 60888</Typography>
@@ -178,14 +195,18 @@ export default function OrderNewForm({ isEdit, currentOrder }) {
                             )
                           }} />
 
-                        <Button onClick={() => remove(index)} variant="text" size='small' color="error" startIcon={<EditLocationAltIcon />}>Remove</Button>
+                        <Button onClick={() => remove(index)} variant="text" size='small' color="error" startIcon={<DeleteOutlinedIcon />}>Remove</Button>
                       </Stack>
                     )
                   }
                   )}
+                  <Box>
+                    <TextField fullWidth multiline label="Note" variant="outlined" rows={4} maxRows={6} />
+
+                  </Box>
                   <Stack justifyContent='space-between' direction={{ xs: 'column', md: 'row' }}>
                     <Box>
-                      <Button onClick={() => push({ name: '', description: '', price: 0 })} variant="text" size='small' startIcon={<EditLocationAltIcon />}>Add</Button>
+                      <Button onClick={() => push({ name: '', description: '', price: 0 })} variant="text" size='small' startIcon={<AddOutlinedIcon />}>Add item</Button>
                     </Box>
                     <Box sx={{ width: '30%' }}>
                       <Stack direction='column' justifyContent='space-between'>
@@ -212,7 +233,18 @@ export default function OrderNewForm({ isEdit, currentOrder }) {
           </Box>
 
         </Paper >
+        <Stack direction='row' justifyContent="flex-end" spacing={2} sx={{ mt: 3 }}>
+          <Button size='large' variant="contained" color='inherit'>Clear</Button>
+          <Button size='large' variant="contained" >
+            Create
+          </Button>
+        </Stack>
+        <DialogAnimate open={isOpenModal} onClose={handleCloseModal}>
+          <DialogTitle>Add address</DialogTitle>
+          <AddressNewForm onCancel={handleCloseModal} currentAddress={currentAddress} />
+        </DialogAnimate>
       </Form>
     </FormikProvider >
+
   );
 }

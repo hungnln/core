@@ -2,6 +2,7 @@ import { map, filter } from 'lodash';
 import { createSlice } from '@reduxjs/toolkit';
 // utils
 import axios from '../../utils/axios';
+import { async } from '@firebase/util';
 
 // ----------------------------------------------------------------------
 
@@ -9,8 +10,16 @@ const initialState = {
     isLoading: false,
     error: false,
     orderList: [],
-    currentOrder: {},
-    orderCreate:{}
+    currentOrder: {
+        destinationAddress: '',
+        destinationLongitude: 231321,
+        destinationLatidue: 23232,
+        customer: {
+            name: 'NguyenHung',
+            phone: '0939398000',
+        }
+    },
+    orderCreate: {}
 };
 
 const slice = createSlice({
@@ -31,6 +40,13 @@ const slice = createSlice({
             state.isLoading = false;
             state.error = false;
             state.orderList = action.payload;
+        },
+        editCustomerAddress(state, action) {
+            const { newName, newAddress, newPhone } = action.payload;
+            state.isLoading = false;
+            state.error = false;
+            const oldCustomerAddress = state.currentOrder.customerAddress;
+            const newCustomerAddress = [...oldCustomerAddress, customer:{newName,newPhone},]
         }
 
 
@@ -67,6 +83,16 @@ export function getOrderList() {
             dispatch(slice.actions.hasError(error));
         }
     };
+}
+export function editCustomerAddress(values) {
+    return async (dispatch) => {
+        dispatch(slice.actions.startLoading());
+        try {
+            dispatch(slice.actions.editCustomerAddress(values))
+        } catch (error) {
+            dispatch(slice.actions.hasError(error));
+        }
+    }
 }
 
 // ----------------------------------------------------------------------

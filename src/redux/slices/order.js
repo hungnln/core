@@ -10,15 +10,7 @@ const initialState = {
     isLoading: false,
     error: false,
     orderList: [],
-    currentOrder: {
-        destinationAddress: '',
-        destinationLongitude: 231321,
-        destinationLatidue: 23232,
-        customer: {
-            name: 'NguyenHung',
-            phone: '0939398000',
-        }
-    },
+    currentOrder: {},
     orderCreate: {}
 };
 
@@ -42,11 +34,25 @@ const slice = createSlice({
             state.orderList = action.payload;
         },
         editCustomerAddress(state, action) {
-            const { newName, newAddress, newPhone } = action.payload;
             state.isLoading = false;
             state.error = false;
-            const oldCustomerAddress = state.currentOrder.customerAddress;
-            const newCustomerAddress = [...oldCustomerAddress, customer:{newName,newPhone},]
+            state.currentOrder = { ...state.currentOrder, ...action.payload }
+        },
+        getOrderDetail(state, action) {
+            state.isLoading = false;
+            state.error = false;
+            state.currentOrder = action.payload;
+        },
+        createOrder(state, action) {
+            state.isLoading = false;
+            state.error = false;
+            const newOrderList = [...state.orderList, action.payload];
+            state.orderList = newOrderList;
+        },
+        changePackagesStatus(state, action) {
+            state.isLoading = false;
+            state.error = false;
+
         }
 
 
@@ -61,24 +67,40 @@ export default slice.reducer;
 export const { onToggleFollow, deleteOrder } = slice.actions;
 
 // ----------------------------------------------------------------------
-
-export function getProfile() {
+export function getOrderListByShopId(shopId) {
     return async (dispatch) => {
         dispatch(slice.actions.startLoading());
         try {
-            const response = await axios.get('/api/user/profile');
-            dispatch(slice.actions.getProfileSuccess(response.data.profile));
+            const response = await axios.get(`/api/v1.0/packages?shopId=${shopId}`);
+            console.log('responese', response);
+            dispatch(slice.actions.getOrderList(response.data.data));
         } catch (error) {
             dispatch(slice.actions.hasError(error));
         }
     };
 }
-export function getOrderList() {
+export function getOrderListByAdmin() {
     return async (dispatch) => {
         dispatch(slice.actions.startLoading());
         try {
-            const response = await axios.get('/api/v1.0/orders');
-            dispatch(slice.actions.getOrderListSuccess(response.data.result));
+            const response = await axios.get(`/api/v1.0/packages`);
+            console.log('responese', response);
+            dispatch(slice.actions.getOrderList(response.data.data));
+        } catch (error) {
+            dispatch(slice.actions.hasError(error));
+        }
+    };
+}
+export function getOrderDetail(orderId) {
+    return async (dispatch) => {
+        dispatch(slice.actions.startLoading());
+        try {
+            const response = await axios.get(`/api/v1.0/packages/${orderId}`);
+            console.log('responese', response);
+
+            if (response.status === 200) {
+                dispatch(slice.actions.getOrderDetail(response.data.data))
+            }
         } catch (error) {
             dispatch(slice.actions.hasError(error));
         }
@@ -94,6 +116,62 @@ export function editCustomerAddress(values) {
         }
     }
 }
+export function createOrder(values, callback) {
+    return async (dispatch) => {
+        dispatch(slice.actions.startLoading());
+        try {
+            const response = await axios.post(`/api/v1.0/packages`, values);
+            if (response.data.status === 200) {
+                dispatch(slice.actions.createOrder(response.data.data));
+                callback({ isError: response.data.success })
+            }
+        } catch (error) {
+            callback(error.response.data)
+            dispatch(slice.actions.hasError(error));
+        }
+    }
+}
+export function approvedPackages(id, callback) {
+    return async (dispatch) => {
+        dispatch(slice.actions.startLoading());
+        try {
+            const response = await axios.put(`/api/v1.0/packages/approve?packageId?=${id}`);
+            // dispatch(slice.actions.createOrder(response.data.data));
+            callback({ response: response.data })
+        } catch (error) {
+            callback(error.response.data)
+            dispatch(slice.actions.hasError(error));
+        }
+    }
+}
+export function rejectPackages(id, callback) {
+    return async (dispatch) => {
+        dispatch(slice.actions.startLoading());
+        try {
+            const response = await axios.put(`/api/v1.0/packages/reject?packageId?=${id}`);
+            // dispatch(slice.actions.createOrder(response.data.data));
+            callback({ response: response.data })
+        } catch (error) {
+            callback(error.response.data)
+            dispatch(slice.actions.hasError(error));
+        }
+    }
+}
+// export function createOrder(values, callback) {
+//     return async (dispatch) => {
+//         dispatch(slice.actions.startLoading());
+//         try {
+//             const response = await axios.post(`/api/v1.0/packages`, values);
+//             if (response.data.status === 200) {
+//                 dispatch(slice.actions.createOrder(response.data.data));
+//                 callback({ IsError: response.data.success })
+//             }
+//         } catch (error) {
+//             callback(error.response.data)
+//             dispatch(slice.actions.hasError(error));
+//         }
+//     }
+// }
 
 // ----------------------------------------------------------------------
 

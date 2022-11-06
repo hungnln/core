@@ -90,6 +90,7 @@ export default function Router() {
             { path: 'list', element: <OrderList /> },
             { path: 'new', element: <OrderCreate /> },
             { path: 'edit/:id', element: <OrderCreate /> },
+            { path: 'preview/:id', element: <OrderPreview /> }
           ]
         },
 
@@ -243,9 +244,9 @@ const ResetPassword = Loadable(lazy(() => import('../pages/authentication/ResetP
 const VerifyCode = Loadable(lazy(() => import('../pages/authentication/VerifyCode')));
 // Dashboard
 
-const OrderCreate = Loadable(lazy(() => import('../pages/dashboard/order/OrderCreate')))
-const OrderList = Loadable(lazy(() => import('../pages/dashboard/order/OrderList')))
-
+const OrderCreate = Loadable(lazy(() => import('../pages/dashboard/order/OrderCreate')));
+const OrderList = Loadable(lazy(() => import('../pages/dashboard/order/OrderList')));
+const OrderPreview = Loadable(lazy(() => import('../pages/dashboard/order/OrderPreview')));
 
 
 

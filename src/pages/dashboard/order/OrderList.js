@@ -24,7 +24,7 @@ import {
     Tabs
 } from '@mui/material';
 import useSettings from 'src/hooks/useSettings';
-import { deleteOrder, getOrderList } from 'src/redux/slices/order';
+import { deleteOrder, getOrderListByAdmin, getOrderListByShopId } from 'src/redux/slices/order';
 import { PATH_DASHBOARD } from 'src/routes/paths';
 import Scrollbar from 'src/components/Scrollbar';
 import Page from 'src/components/Page';
@@ -33,6 +33,8 @@ import { OrderListHead, OrderListToolbar, OrderMoreMenu } from 'src/components/_
 import Label from 'src/components/Label';
 import SearchNotFound from 'src/components/SearchNotFound';
 import { useDispatch, useSelector } from 'src/redux/store';
+import { token } from 'src/utils/axios';
+import useAuth from 'src/hooks/useAuth';
 // redux
 
 // routes
@@ -45,13 +47,21 @@ import { useDispatch, useSelector } from 'src/redux/store';
 // ----------------------------------------------------------------------
 
 const TABLE_HEAD = [
-    { id: 'name', label: 'Name', alignRight: false },
-    { id: 'company', label: 'Company', alignRight: false },
-    { id: 'role', label: 'Role', alignRight: false },
-    { id: 'isVerified', label: 'Verified', alignRight: false },
+    { id: 'receiver', label: 'receiver', alignRight: false },
+    { id: 'createAt', label: 'Created At', alignRight: false },
+    { id: 'shipper', label: 'Shipper', alignRight: false },
+    { id: 'priceShip', label: 'Price Ship', alignRight: false },
     { id: 'status', label: 'Status', alignRight: false },
     { id: '' }
 ];
+const ADMIN_TABLE_HEAD = [
+    { id: 'shop', label: 'Shop', alignRight: false },
+    { id: 'createAt', label: 'Created At', alignRight: false },
+    { id: 'shipper', label: 'Shipper', alignRight: false },
+    { id: 'priceShip', label: 'Price Ship', alignRight: false },
+    { id: 'status', label: 'Status', alignRight: false },
+    { id: '' }
+]
 
 // ----------------------------------------------------------------------
 
@@ -95,9 +105,16 @@ export default function OrderList() {
     const [orderBy, setOrderBy] = useState('name');
     const [filterName, setFilterName] = useState('');
     const [rowsPerPage, setRowsPerPage] = useState(5);
+    const { user } = useAuth();
+    const isAdmin = user.role === 'Admin'
 
     useEffect(() => {
-        dispatch(getOrderList());
+        if (isAdmin) {
+            dispatch(getOrderListByAdmin())
+        } else {
+            const userId = localStorage.getItem('userId')
+            dispatch(getOrderListByShopId(userId));
+        }
     }, [dispatch]);
 
     const handleRequestSort = (event, property) => {
@@ -169,14 +186,16 @@ export default function OrderList() {
                         { name: 'List' }
                     ]}
                     action={
-                        <Button
-                            variant="contained"
-                            component={RouterLink}
-                            to={PATH_DASHBOARD.order.newOrder}
-                            startIcon={<Icon icon={plusFill} />}
-                        >
-                            New Order
-                        </Button>
+                        !isAdmin && (
+                            <Button
+                                variant="contained"
+                                component={RouterLink}
+                                to={PATH_DASHBOARD.order.newOrder}
+                                startIcon={<Icon icon={plusFill} />}
+                            >
+                                New Order
+                            </Button>
+                        )
                     }
                 />
 
@@ -211,40 +230,63 @@ export default function OrderList() {
                                 <OrderListHead
                                     order={order}
                                     orderBy={orderBy}
-                                    headLabel={TABLE_HEAD}
+                                    headLabel={isAdmin ? ADMIN_TABLE_HEAD : TABLE_HEAD}
                                     rowCount={orderList.length}
                                     numSelected={selected.length}
                                     onRequestSort={handleRequestSort}
-                                    onSelectAllClick={handleSelectAllClick}
+                                // onSelectAllClick={handleSelectAllClick}
                                 />
                                 <TableBody>
                                     {filteredOrders.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
-                                        const { id, name, role, status, company, avatarUrl, isVerified } = row;
-                                        const isItemSelected = selected.indexOf(name) !== -1;
+                                        const { id, destinationAddress,shopId, receiverName, receiverPhone, priceShip, createdAt, status, shipperId, note } = row;
+                                        // const isItemSelected = selected.indexOf(name) !== -1;
 
                                         return (
                                             <TableRow
                                                 hover
                                                 key={id}
                                                 tabIndex={-1}
-                                                role="checkbox"
-                                                selected={isItemSelected}
-                                                aria-checked={isItemSelected}
+                                            // role="checkbox"
+                                            // selected={isItemSelected}
+                                            // aria-checked={isItemSelected}
                                             >
-                                                <TableCell padding="checkbox">
+                                                {/* <TableCell padding="checkbox">
                                                     <Checkbox checked={isItemSelected} onChange={(event) => handleClick(event, name)} />
-                                                </TableCell>
-                                                <TableCell component="th" scope="row" padding="none">
-                                                    <Stack direction="row" alignItems="center" spacing={2}>
-                                                        <Avatar alt={name} src={avatarUrl} />
-                                                        <Typography variant="subtitle2" noWrap>
-                                                            {name}
-                                                        </Typography>
-                                                    </Stack>
-                                                </TableCell>
-                                                <TableCell align="left">{company}</TableCell>
-                                                <TableCell align="left">{role}</TableCell>
-                                                <TableCell align="left">{isVerified ? 'Yes' : 'No'}</TableCell>
+                                                </TableCell> */}
+                                                {isAdmin ? (
+                                                    <TableCell component="th" scope="row" padding="none">
+                                                        <Stack direction="row" alignItems="center" spacing={2}>
+                                                            {/* <Avatar alt={name} src={avatarUrl} /> */}
+                                                            <Stack direction="column" spacing={1}>
+                                                                <Typography variant="subtitle2" noWrap>
+                                                                    {shopId}
+                                                                </Typography>
+                                                                {/* <Typography variant="body2" noWrap>
+                                                                    {destinationAddress}
+                                                                </Typography> */}
+                                                            </Stack>
+                                                        </Stack>
+                                                    </TableCell>
+                                                ) : (
+                                                    <TableCell component="th" scope="row" padding="none">
+                                                        <Stack direction="row" alignItems="center" spacing={2}>
+                                                            {/* <Avatar alt={name} src={avatarUrl} /> */}
+                                                            <Stack direction="column" spacing={1}>
+                                                                <Typography variant="subtitle2" noWrap>
+                                                                    {receiverName}
+                                                                </Typography>
+                                                                <Typography variant="body2" noWrap>
+                                                                    {destinationAddress}
+                                                                </Typography>
+                                                            </Stack>
+                                                        </Stack>
+                                                    </TableCell>
+                                                )}
+                                                <TableCell align="left">{createdAt}</TableCell>
+                                                <TableCell align="left">{shipperId || 'Not found'}</TableCell>
+
+                                                <TableCell align="left">{priceShip}</TableCell>
+                                                {/* <TableCell align="left">{isVerified ? 'Yes' : 'No'}</TableCell> */}
                                                 <TableCell align="left">
                                                     <Label
                                                         variant={theme.palette.mode === 'light' ? 'ghost' : 'filled'}
@@ -255,7 +297,7 @@ export default function OrderList() {
                                                 </TableCell>
 
                                                 <TableCell align="right">
-                                                    <OrderMoreMenu onDelete={() => handleDeleteOrder(id)} orderName={name} />
+                                                    <OrderMoreMenu onDelete={() => handleDeleteOrder(id)} orderId={id} />
                                                 </TableCell>
                                             </TableRow>
                                         );

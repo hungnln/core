@@ -10,6 +10,7 @@ import moreVerticalFill from '@iconify/icons-eva/more-vertical-fill';
 import { Menu, MenuItem, IconButton, ListItemIcon, ListItemText } from '@mui/material';
 // routes
 import { PATH_DASHBOARD } from '../../../../routes/paths';
+import useAuth from 'src/hooks/useAuth';
 
 // ----------------------------------------------------------------------
 
@@ -18,10 +19,11 @@ OrderMoreMenu.propTypes = {
   orderName: PropTypes.string
 };
 
-export default function OrderMoreMenu({ onDelete, orderName }) {
+export default function OrderMoreMenu({ onDelete, orderName, orderId }) {
   const ref = useRef(null);
   const [isOpen, setIsOpen] = useState(false);
-
+  const { user } = useAuth()
+  const isAdmin = user?.role === 'Admin'
   return (
     <>
       <IconButton ref={ref} onClick={() => setIsOpen(true)}>
@@ -38,22 +40,32 @@ export default function OrderMoreMenu({ onDelete, orderName }) {
         anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
         transformOrigin={{ vertical: 'top', horizontal: 'right' }}
       >
-        <MenuItem onClick={onDelete} sx={{ color: 'text.secondary' }}>
+        {/* <MenuItem onClick={onDelete} sx={{ color: 'text.secondary' }}>
           <ListItemIcon>
             <Icon icon={trash2Outline} width={24} height={24} />
           </ListItemIcon>
           <ListItemText primary="Delete" primaryTypographyProps={{ variant: 'body2' }} />
-        </MenuItem>
-
+        </MenuItem> */}
         <MenuItem
           component={RouterLink}
-          to={`${PATH_DASHBOARD.order.root}/${paramCase(orderName)}/edit`}
+          to={`${PATH_DASHBOARD.order.root}/edit/${orderId}`}
           sx={{ color: 'text.secondary' }}
         >
           <ListItemIcon>
             <Icon icon={editFill} width={24} height={24} />
           </ListItemIcon>
           <ListItemText primary="Edit" primaryTypographyProps={{ variant: 'body2' }} />
+        </MenuItem>
+
+        <MenuItem
+          component={RouterLink}
+          to={`${PATH_DASHBOARD.order.preview}/${orderId}`}
+          sx={{ color: 'text.secondary' }}
+        >
+          <ListItemIcon>
+            <Icon icon={editFill} width={24} height={24} />
+          </ListItemIcon>
+          <ListItemText primary="Preview" primaryTypographyProps={{ variant: 'body2' }} />
         </MenuItem>
       </Menu>
     </>

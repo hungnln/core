@@ -5,7 +5,7 @@ import axios from '../utils/axios';
 import { isValidToken, setSession } from '../utils/jwt';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
-import { firebaseConfig } from 'src/config';
+import { firebaseConfig, userRole } from 'src/config';
 import { MIconButton } from 'src/components/@material-extend';
 import { Icon } from '@mui/material';
 import closeFill from '@iconify/icons-eva/close-fill';
@@ -72,7 +72,6 @@ AuthProvider.propTypes = {
 
 function AuthProvider({ children }) {
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
-  // const [demo, setDemo] = useState();
   const [state, dispatch] = useReducer(reducer, initialState);
 
 
@@ -122,50 +121,46 @@ function AuthProvider({ children }) {
       try {
         const accessToken = window.localStorage.getItem('accessToken');
         console.log("check admin token", accessToken);
-        const firebaseToken = localStorage.getItem('firebaseToken')
+        const firebaseToken = localStorage.getItem('firebaseToken');
 
         if (accessToken && isValidToken(accessToken)) {
           setSession(accessToken);
           const x = JSON.parse(atob(accessToken.split('.')[1]))
           console.log("check admin token", x);
-          if (x?.role === "Admin") {
-            dispatch({
-              type: 'INITIALIZE',
-              payload: {
-                isAuthenticated: true,
-                user: { role: 'Admin', displayName: 'Admin' }
-              }
-            });
-          }
-          else {
-            console.log('check  firebase');
-            // const response = await axios.get('/api/account/my-account');
-            // const { user } = response.data;
-            // const respone = await axios.post(`/api/login/firebase`, { headers: { Authorization: `Baerer ${firebaseToken}` } })
-            const account = x;
-            console.log(account, 'account');
-            if (account) {
-              dispatch({
-                type: 'INITIALIZE',
-                // xai tam
-                payload: { isAuthenticated: true, user: { role: 'Admin', displayName: 'Admin' } }
-
-
-                // payload: { isAuthenticated: true, user: { id: account.id, displayName: account.name, email: account.email, role: 'User', photoURL: account.imageURL }, isInitialized: true }
-              })
-            } else {
-              localStorage.removeItem('firebaseToken')
-              dispatch({
-                type: 'INITIALIZE',
-                payload: {
-                  isAuthenticated: false,
-                  user: null
-                }
-              });
-            }
-
-          }
+          dispatch({
+            type: 'INITIALIZE',
+            payload: { isAuthenticated: true, user: { role: x.role, displayName: 'Admin' } }
+          })
         }
+        //   else {
+        //     console.log('check  firebase');
+        //     // const response = await axios.get('/api/account/my-account');
+        //     // const { user } = response.data;
+        //     // const respone = await axios.post(`/api/login/firebase`, { headers: { Authorization: `Baerer ${firebaseToken}` } })
+        //     const account = x;
+        //     console.log(account, 'account');
+        //     if (account) {
+        //       dispatch({
+        //         type: 'INITIALIZE',
+        //         // xai tam
+        //         payload: { isAuthenticated: true, user: { role: 'Shop', displayName: 'Shop' } }
+
+
+        //         // payload: { isAuthenticated: true, user: { id: account.id, displayName: account.name, email: account.email, role: 'User', photoURL: account.imageURL }, isInitialized: true }
+        //       })
+        //     } else {
+        //       localStorage.removeItem('firebaseToken')
+        //       dispatch({
+        //         type: 'INITIALIZE',
+        //         payload: {
+        //           isAuthenticated: false,
+        //           user: null
+        //         }
+        //       });
+        //     }
+
+        //   }
+        // }
 
         // const response = await axios.post('/api/login/admin');
 

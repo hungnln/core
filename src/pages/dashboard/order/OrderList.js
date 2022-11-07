@@ -35,6 +35,8 @@ import SearchNotFound from 'src/components/SearchNotFound';
 import { useDispatch, useSelector } from 'src/redux/store';
 import { token } from 'src/utils/axios';
 import useAuth from 'src/hooks/useAuth';
+import { userRole } from 'src/config';
+import moment from 'moment/moment';
 // redux
 
 // routes
@@ -106,7 +108,7 @@ export default function OrderList() {
     const [filterName, setFilterName] = useState('');
     const [rowsPerPage, setRowsPerPage] = useState(5);
     const { user } = useAuth();
-    const isAdmin = user.role === 'Admin'
+    const isAdmin = user.role === userRole.admin
 
     useEffect(() => {
         if (isAdmin) {
@@ -238,7 +240,7 @@ export default function OrderList() {
                                 />
                                 <TableBody>
                                     {filteredOrders.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
-                                        const { id, destinationAddress,shopId, receiverName, receiverPhone, priceShip, createdAt, status, shipperId, note } = row;
+                                        const { id, destinationAddress, shopId, receiverName, receiverPhone, priceShip, createdAt, status, shipperId, note } = row;
                                         // const isItemSelected = selected.indexOf(name) !== -1;
 
                                         return (
@@ -282,7 +284,7 @@ export default function OrderList() {
                                                         </Stack>
                                                     </TableCell>
                                                 )}
-                                                <TableCell align="left">{createdAt}</TableCell>
+                                                <TableCell align="left">{moment(createdAt).format('DD-MM-YYYY HH:mm')}</TableCell>
                                                 <TableCell align="left">{shipperId || 'Not found'}</TableCell>
 
                                                 <TableCell align="left">{priceShip}</TableCell>

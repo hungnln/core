@@ -126,10 +126,14 @@ function AuthProvider({ children }) {
         if (accessToken && isValidToken(accessToken)) {
           setSession(accessToken);
           const x = JSON.parse(atob(accessToken.split('.')[1]))
-          console.log("check admin token", x);
+          const type = x.role === userRole.admin ? 'admin' : 'shops'
+          const response = await axios.get(`/api/v1.0/${type}/${x.id}`);
+          console.log('check respone', response);
+          const account = response.data.data;
           dispatch({
             type: 'INITIALIZE',
-            payload: { isAuthenticated: true, user: { role: x.role, displayName: 'Admin' } }
+            payload: { isAuthenticated: true, user: { id: account.id, displayName: account.displayName, email: account.email, role: x.role, photoURL: account.photoUrl } }
+
           })
         }
         //   else {
@@ -215,36 +219,38 @@ function AuthProvider({ children }) {
       }
     })
   };
-  const login = async (userName, password, isAdmin) => {
-    const response = await axios.post(`/api/v1.0/authorizes?isShop=${!isAdmin}&isAdmin=${isAdmin}&isShipper=false`, {
-      userName,
-      password
-    });
-    console.log(response, 'test api');
-    enqueueSnackbar('Login success', {
-      variant: 'success',
-      action: (key) => (
-        <MIconButton size="small" onClick={() => closeSnackbar(key)}>
-          <Icon icon={closeFill} />
-        </MIconButton>
-      )
-    });
-    const { token, user } = response.data.data;
+  const login = async (userName, password, isAdmin, callback) => {
+    try {
+      const response = await axios.post(`/api/v1.0/authorizes?isShop=${!isAdmin}&isAdmin=${isAdmin}&isShipper=false`, {
+        userName,
+        password
+      });
+      console.log('mess', response)
+      console.log(response, 'test api');
+      enqueueSnackbar('Login success', {
+        variant: 'success',
+        action: (key) => (
+          <MIconButton size="small" onClick={() => closeSnackbar(key)}>
+            <Icon icon={closeFill} />
+          </MIconButton>
+        )
+      });
+      const { token, admin, shop } = response.data.data;
+      const account = admin || shop;
+      setSession(token);
+      dispatch({
+        type: 'LOGIN',
+        payload: { user: { id: account.id, displayName: account.displayName, email: account.email, role: isAdmin ? userRole.admin : userRole.shop, photoURL: account.imageURL } }
 
-    setSession(token);
-    dispatch({
-      type: 'LOGIN',
-      payload: {
-        // user
-        user: isAdmin ? { role: 'Admin', displayName: 'Admin' } : { role: 'Shop', displayName: 'Shop' }
-      }
-    });
+      });
+    } catch (error) {
+      callback(error.response.data.message)
+
+    }
   };
 
-  const register = async (values,isAdmin) => {
-    const response = await axios.post('/api/v1.0/shops/register', {
-     values
-    });
+  const register = async (values, isAdmin) => {
+    const response = await axios.post('/api/v1.0/shops/register', values);
     const { accessToken, user } = response.data;
 
     window.localStorage.setItem('accessToken', accessToken);

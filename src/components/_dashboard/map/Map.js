@@ -1,5 +1,5 @@
 import mapboxgl from 'mapbox-gl';
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 function Mapbox({ currentAddress, onChangeLocation }) {
     mapboxgl.accessToken = 'pk.eyJ1Ijoibmd1eWVuaHVuZzA5MDgiLCJhIjoiY2w5bGExZnZ6MHY5bTNwbWd4eHV2aW5lNCJ9.VitcdZOLOTeyJJEGjD0h4Q';
@@ -12,13 +12,17 @@ function Mapbox({ currentAddress, onChangeLocation }) {
     const [lat, setLat] = useState(currentAddress?.latitude ||
         10.850226152163437,
     );
+    // const [lng, setLng] = useState(-70.9);
+    // const [lat, setLat] = useState(42.35);
     const [zoom, setZoom] = useState(15);
-    useEffect(() => {
-        if (!map.current) return; // wait for map to initialize
-        map.current.on('click', (e) => {
-            onChangeLocation(e)
-        });
-    });
+    // useEffect(() => {
+    //     if (!map.current) return; // wait for map to initialize
+    //     map.current.on('click', (e) => {
+    //         console.log('click')
+    //         onChangeLocation(e)
+    //     });
+    // });
+
     useEffect(() => {
         if (map.current) return; // initialize map only once
         map.current = new mapboxgl.Map({
@@ -26,6 +30,9 @@ function Mapbox({ currentAddress, onChangeLocation }) {
             style: 'mapbox://styles/mapbox/streets-v11',
             center: [lng, lat],
             zoom
+        });
+        map.current.on('click', (e) => {
+            onChangeLocation(e)
         });
     });
     return (

@@ -29,6 +29,9 @@ import _ from 'lodash';
 import { useTheme } from '@mui/material/styles';
 import { sentenceCase } from 'change-case';
 import { format } from 'date-fns';
+import { PackageStatus, userRole } from 'src/config';
+import useAuth from 'src/hooks/useAuth';
+import moment from 'moment';
 // ----------------------------------------------------------------------
 
 OrderPreviewForm.propTypes = {
@@ -42,29 +45,9 @@ export default function OrderPreviewForm({ currentOrder }) {
   const theme = useTheme();
   const { enqueueSnackbar } = useSnackbar();
   // const { currentOrder } = useSelector(state => state.currentOrder)
-  const NewOrderSchema = Yup.object().shape({
-    startAddress: Yup.string().required('Shop Address is required'),
-    startLongitude: Yup.number().required('Shop startLongitude is required'),
-    startLatitude: Yup.number().required('Shop startLatitude is required'),
-    destinationAddress: Yup.mixed().required('Receiver destinationAddress is required'),
-    destinationLongitude: Yup.number().required('Receiver destinationLongitude is required'),
-    destinationLatitude: Yup.number().required('Receiver destinationLatitude is required'),
-    receiverName: Yup.string().required('Receiver Name is required'),
-    receiverPhone: Yup.string().required('Receiver phone is required'),
-    distance: Yup.number().required('Shipping distance is required'),
-    volume: Yup.number().required('Packages volume is required').moreThan(0, 'Volume must more than 0'),
-    weight: Yup.number().required('Packages weight is required').moreThan(0, 'Weight must more than 0'),
-    priceShip: Yup.number().required('Packages priceShip is required'),
-    products: Yup.array().of(
-      Yup.object().shape({
-        name: Yup.string().required('Product name is required'),
-        description: Yup.string().required('Product description is required'),
-        price: Yup.number().required('Product price is required').moreThan(0, 'Price must more than 0')
-      })
-    ).required('Must have products')
-  });
-
-  const { id, startAddress, shipperId, destinationAddress, receiverName, receiverPhone, createdAt, status, products, priceShip, note, volume, weight, distance, shopId } = currentOrder;
+  const { user } = useAuth();
+  const isAdmin = user.role === userRole.admin
+  const { id, startAddress, shop, shipper, shipperId, destinationAddress, receiverName, receiverPhone, createdAt, status, products, priceShip, note, volume, weight, distance, shopId } = currentOrder;
   function subtotal(items) {
     return items?.map(({ price }) => price).reduce((sum, i) => sum + i, 0);
   }
@@ -88,7 +71,9 @@ export default function OrderPreviewForm({ currentOrder }) {
           </Grid>
           <Grid item xs={6} mb={5}>
             <Typography variant='overline' sx={{ color: 'text.secondary', mb: 2 }}>PACKAGES FROM</Typography>
-            <Typography variant='body2'>{shopId}</Typography>
+            <Typography variant='body2'>{shop?.displayName}</Typography>
+            <Typography variant='body2'>{destinationAddress}</Typography>
+            <Typography variant='body2'>Phone : {shop?.phoneNumber}</Typography>
           </Grid>
           <Grid item xs={6} mb={5}>
             <Typography variant='overline' sx={{ color: 'text.secondary', mb: 2 }}>PACKAGES To</Typography>
@@ -99,7 +84,7 @@ export default function OrderPreviewForm({ currentOrder }) {
           </Grid>
           <Grid item xs={6} mb={5}>
             <Typography variant='overline' sx={{ color: 'text.secondary', mb: 2 }}>DATE CREATE </Typography>
-            <Typography variant='body2'>{createdAt}</Typography>
+            <Typography variant='body2'>{moment(createdAt).format('DD-MM-YYYY HH:mm')}</Typography>
 
           </Grid>
           <Grid item xs={6} mb={5}>
@@ -241,10 +226,14 @@ export default function OrderPreviewForm({ currentOrder }) {
 
       </Paper >
       <Stack direction='row' justifyContent="flex-end" spacing={2} sx={{ mt: 3 }}>
-        <Button size='large' variant="outlined" color='error' onClick={() => { dispatch(rejectPackages(id, message => enqueueSnackbar(message?.message, { variant: message.success ? 'success' : 'error' }))) }} >Reject</Button>
-        <LoadingButton type="submit" variant="contained" onClick={() => { dispatch(approvedPackages(id, message => enqueueSnackbar(message?.message, { variant: message.success ? 'success' : 'error' }))) }}>
-          Approved
-        </LoadingButton>
+        {status === PackageStatus.waiting && isAdmin && (
+          <>
+            <Button size='large' variant="outlined" color='error' onClick={() => { dispatch(rejectPackages(id, message => enqueueSnackbar(message?.message, { variant: message.success ? 'success' : 'error' }))) }} >Reject</Button>
+            <LoadingButton type="submit" variant="contained" onClick={() => { dispatch(approvedPackages(id, message => enqueueSnackbar(message?.message, { variant: message.success ? 'success' : 'error' }))) }}>
+              Approved
+            </LoadingButton>
+          </>
+        )}
       </Stack>
       {/* <DialogAnimate open={isOpenModal} onClose={handleCloseModal}>
         <DialogTitle>Add address</DialogTitle>

@@ -27,6 +27,7 @@ export const userRole = {
   shipper: 'SHIPPER',
   shop: 'SHOP'
 }
+export const defaultId = '00000000-0000-0000-0000-000000000000'
 
 export const cognitoConfig = {
   userPoolId: process.env.REACT_APP_AWS_COGNITO_USER_POOL_ID,

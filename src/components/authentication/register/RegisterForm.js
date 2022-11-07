@@ -1,5 +1,5 @@
 import * as Yup from 'yup';
-import { useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Icon } from '@iconify/react';
 import { useSnackbar } from 'notistack';
 import { useFormik, Form, FormikProvider } from 'formik';
@@ -15,6 +15,7 @@ import useIsMountedRef from '../../../hooks/useIsMountedRef';
 //
 import { MIconButton } from '../../@material-extend';
 import Mapbox from 'src/components/_dashboard/map/Map';
+import { values } from 'lodash';
 
 // ----------------------------------------------------------------------
 
@@ -24,6 +25,7 @@ export default function RegisterForm() {
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
   const [showPassword, setShowPassword] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const count = 0;
   const RegisterSchema = Yup.object().shape({
     displayName: Yup.string().min(2, 'Too Short!').max(50, 'Too Long!').required('First name required'),
     phoneNumber: Yup.string().required('Phone is required'),
@@ -32,6 +34,8 @@ export default function RegisterForm() {
     password: Yup.string().required('Password is required'),
     longitude: Yup.number().required('Longlat is required'),
     latitude: Yup.number().required('Longlat is required'),
+    userName: Yup.string().required('User Name is required'),
+
 
   });
 
@@ -41,7 +45,7 @@ export default function RegisterForm() {
       password: '',
       email: '',
       phoneNumber: '',
-      photoUrl: '',
+      photoUrl: 'string',
       displayName: '',
       address: '',
       longitude: null,
@@ -71,29 +75,36 @@ export default function RegisterForm() {
       }
     }
   });
-  const handleChangeLocation = (callback) => {
+  const handleChangeLocation = useCallback((callback) => {
     const { lng, lat } = callback?.lngLat;
-    formik.setFieldValue('longitude', lng)
-    formik.setFieldValue('latitude', lat)
-  }
-  const changeType = (type) => {
-    setIsAdmin(type)
-  }
+    formik.setFieldValue('longitude', lng);
+    formik.setFieldValue('latitude', lat);
 
-  const { errors, touched, handleSubmit, isSubmitting, getFieldProps } = formik;
+
+  })
+  useEffect(() => { }, [count])
+
+  const { values, errors, touched, handleSubmit, isSubmitting, getFieldProps, handleChange } = formik;
 
   return (
     <FormikProvider value={formik}>
       <Form autoComplete="off" noValidate onSubmit={handleSubmit}>
         <Stack spacing={3}>
           {errors.afterSubmit && <Alert severity="error">{errors.afterSubmit}</Alert>}
-
+          <TextField
+            fullWidth
+            label="User Name"
+            {...getFieldProps('userName')}
+            error={Boolean(touched.userName && errors.userName)}
+            helperText={touched.userName && errors.userName}
+          />
           <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
 
 
             <TextField
               fullWidth
-              label="Name"
+              autoComplete='name'
+              label="Display Name"
               {...getFieldProps('displayName')}
               error={Boolean(touched.displayName && errors.displayName)}
               helperText={touched.displayName && errors.displayName}
@@ -102,10 +113,11 @@ export default function RegisterForm() {
 
           <TextField
             fullWidth
-            autoComplete="username"
+            autoComplete="email"
             type="email"
-            label="Email address"
+            label="Email"
             {...getFieldProps('email')}
+
             error={Boolean(touched.email && errors.email)}
             helperText={touched.email && errors.email}
           />
@@ -116,6 +128,7 @@ export default function RegisterForm() {
             type={showPassword ? 'text' : 'password'}
             label="Password"
             {...getFieldProps('password')}
+
             InputProps={{
               endAdornment: (
                 <InputAdornment position="end">
@@ -130,14 +143,29 @@ export default function RegisterForm() {
           />
           <TextField
             fullWidth
+            autoComplete="phone"
+            type=""
+            label="Phone Number"
+            {...getFieldProps('phoneNumber')}
+
+            error={Boolean(touched.phoneNumber && errors.phoneNumber)}
+            helperText={touched.phoneNumber && errors.phoneNumber}
+          />
+          <TextField
+            fullWidth
             autoComplete="address"
             label="Address"
+            name='address'
             {...getFieldProps('address')}
+
             error={Boolean(touched.address && errors.address)}
             helperText={touched.address && errors.address}
           />
 
-          <Mapbox onChangeLocation={handleChangeLocation} />
+          {Boolean(touched.address) && (
+            <Mapbox onChangeLocation={handleChangeLocation} />
+          )
+          }
           {Boolean(errors.longitude || errors.latitude) && (
             <Typography variant='caption' sx={{ color: 'error.main' }}>Please pick a destination</Typography>
 

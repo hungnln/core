@@ -121,10 +121,10 @@ export function createOrder(values, callback) {
         dispatch(slice.actions.startLoading());
         try {
             const response = await axios.post(`/api/v1.0/packages`, values);
-            if (response.data.status === 200) {
-                dispatch(slice.actions.createOrder(response.data.data));
-                callback({ isError: response.data.success })
-            }
+            dispatch(slice.actions.createOrder(response.data.data));
+            console.log('check create', response);
+            callback({ success: response.data.success, message: response.data.message })
+
         } catch (error) {
             callback(error.response.data)
             dispatch(slice.actions.hasError(error));

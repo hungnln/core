@@ -8,6 +8,7 @@ import arrowIosDownwardFill from '@iconify/icons-eva/arrow-ios-downward-fill';
 import { alpha, useTheme, styled } from '@mui/material/styles';
 import { Box, List, Collapse, ListItemText, ListItemIcon, ListSubheader, ListItemButton } from '@mui/material';
 import useAuth from 'src/hooks/useAuth';
+import { userRole } from 'src/config';
 
 // ----------------------------------------------------------------------
 
@@ -178,7 +179,7 @@ NavSection.propTypes = {
 
 export default function NavSection({ navConfig, isShow = true, ...other }) {
   const { user } = useAuth();
-  const isAdmin = user?.role === 'Admin';
+  const isAdmin = user?.role === userRole.admin;
   return (
     <Box {...other}>
       {navConfig.filter(list => list.role === user.role).map((list) => {

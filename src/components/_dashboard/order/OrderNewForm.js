@@ -109,10 +109,11 @@ export default function OrderNewForm({ isEdit, currentOrder }) {
     }
   });
   useEffect(() => {
+    console.log(errorState, 'check error create');
     if (!_.isEmpty(errorState)) {
-      if (!errorState.isError) {
+      if (errorState.success) {
         formik.resetForm();
-        enqueueSnackbar(!isEdit ? 'Create order success' : 'Update order success', { variant: 'success' });
+        enqueueSnackbar(errorState.message, { variant: 'success' });
         navigate(PATH_DASHBOARD.order.list);
       }
     }

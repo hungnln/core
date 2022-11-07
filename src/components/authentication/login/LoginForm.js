@@ -40,7 +40,7 @@ export default function LoginForm() {
     validationSchema: LoginSchema,
     onSubmit: async (values, { setErrors, setSubmitting, resetForm }) => {
       try {
-        await login(values.username, values.password, isAdmin);
+        await login(values.username, values.password, isAdmin, message => setErrors({ afterSubmit: message }));
 
         if (isMountedRef.current) {
           setSubmitting(false);
@@ -50,7 +50,7 @@ export default function LoginForm() {
         resetForm();
         if (isMountedRef.current) {
           setSubmitting(false);
-          setErrors({ afterSubmit: error.message });
+          // setErrors({ afterSubmit: error.message });
         }
       }
     }
@@ -69,14 +69,14 @@ export default function LoginForm() {
       <Form autoComplete="off" noValidate onSubmit={handleSubmit}>
         {isAdmin && (
           <Stack >
-            <Link component='button' href='#' variant="subtitle2" sx={{ my: 2 }} onClick={() => changeType(false)}>
+            <Link component='span' variant="subtitle2" sx={{ my: 2 }} onClick={() => changeType(false)}>
               Login with Admin
             </Link>
           </Stack>
         )}
         {!isAdmin && (
           <Stack >
-            <Link component='button' href='#' variant="subtitle2" sx={{ my: 2 }} onClick={() => changeType(true)}>
+            <Link component='span' variant="subtitle2" sx={{ my: 2 }} onClick={() => changeType(true)}>
               Login with Shop
             </Link>
           </Stack>

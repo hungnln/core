@@ -3,6 +3,7 @@ import { PATH_DASHBOARD } from '../../routes/paths';
 // components
 import Label from '../../components/Label';
 import SvgIconStyle from '../../components/SvgIconStyle';
+import { userRole } from 'src/config';
 
 // ----------------------------------------------------------------------
 
@@ -44,7 +45,7 @@ const sidebarConfig = [
   // },
   {
     subheader: 'dashboard',
-    role: 'Admin',
+    role: userRole.admin,
     items: [
       {
         title: 'order',
@@ -60,7 +61,7 @@ const sidebarConfig = [
   },
   {
     subheader: 'dashboard',
-    role: 'Shop',
+    role: userRole.shop,
     items: [
       {
         title: 'order',
@@ -127,7 +128,7 @@ const sidebarConfig = [
   // ----------------------------------------------------------------------
   {
     subheader: 'app',
-    role: 'Shop',
+    role: userRole.shop,
     items: [
       {
         title: 'mail',

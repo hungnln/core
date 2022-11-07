@@ -246,12 +246,9 @@ function AuthProvider({ children }) {
     });
   };
 
-  const register = async (email, password, firstName, lastName) => {
-    const response = await axios.post('/api/account/register', {
-      email,
-      password,
-      firstName,
-      lastName
+  const register = async (values,isAdmin) => {
+    const response = await axios.post('/api/v1.0/shops/register', {
+     values
     });
     const { accessToken, user } = response.data;
 

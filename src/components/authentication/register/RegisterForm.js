@@ -7,13 +7,14 @@ import eyeFill from '@iconify/icons-eva/eye-fill';
 import closeFill from '@iconify/icons-eva/close-fill';
 import eyeOffFill from '@iconify/icons-eva/eye-off-fill';
 // material
-import { Stack, TextField, IconButton, InputAdornment, Alert } from '@mui/material';
+import { Stack, TextField, IconButton, InputAdornment, Alert, Typography } from '@mui/material';
 import { LoadingButton } from '@mui/lab';
 // hooks
 import useAuth from '../../../hooks/useAuth';
 import useIsMountedRef from '../../../hooks/useIsMountedRef';
 //
 import { MIconButton } from '../../@material-extend';
+import Mapbox from 'src/components/_dashboard/map/Map';
 
 // ----------------------------------------------------------------------
 
@@ -22,25 +23,34 @@ export default function RegisterForm() {
   const isMountedRef = useIsMountedRef();
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
   const [showPassword, setShowPassword] = useState(false);
-
+  const [isAdmin, setIsAdmin] = useState(false);
   const RegisterSchema = Yup.object().shape({
-    firstName: Yup.string().min(2, 'Too Short!').max(50, 'Too Long!').required('First name required'),
-    lastName: Yup.string().min(2, 'Too Short!').max(50, 'Too Long!').required('Last name required'),
+    displayName: Yup.string().min(2, 'Too Short!').max(50, 'Too Long!').required('First name required'),
+    phoneNumber: Yup.string().required('Phone is required'),
+    address: Yup.string().required('Address is required'),
     email: Yup.string().email('Email must be a valid email address').required('Email is required'),
-    password: Yup.string().required('Password is required')
+    password: Yup.string().required('Password is required'),
+    longitude: Yup.number().required('Longlat is required'),
+    latitude: Yup.number().required('Longlat is required'),
+
   });
 
   const formik = useFormik({
     initialValues: {
-      firstName: '',
-      lastName: '',
+      userName: '',
+      password: '',
       email: '',
-      password: ''
+      phoneNumber: '',
+      photoUrl: '',
+      displayName: '',
+      address: '',
+      longitude: null,
+      latitude: null,
     },
     validationSchema: RegisterSchema,
     onSubmit: async (values, { setErrors, setSubmitting }) => {
       try {
-        await register(values.email, values.password, values.firstName, values.lastName);
+        await register(values, isAdmin);
         enqueueSnackbar('Register success', {
           variant: 'success',
           action: (key) => (
@@ -61,6 +71,14 @@ export default function RegisterForm() {
       }
     }
   });
+  const handleChangeLocation = (callback) => {
+    const { lng, lat } = callback?.lngLat;
+    formik.setFieldValue('longitude', lng)
+    formik.setFieldValue('latitude', lat)
+  }
+  const changeType = (type) => {
+    setIsAdmin(type)
+  }
 
   const { errors, touched, handleSubmit, isSubmitting, getFieldProps } = formik;
 
@@ -71,20 +89,14 @@ export default function RegisterForm() {
           {errors.afterSubmit && <Alert severity="error">{errors.afterSubmit}</Alert>}
 
           <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-            <TextField
-              fullWidth
-              label="First name"
-              {...getFieldProps('firstName')}
-              error={Boolean(touched.firstName && errors.firstName)}
-              helperText={touched.firstName && errors.firstName}
-            />
+
 
             <TextField
               fullWidth
-              label="Last name"
-              {...getFieldProps('lastName')}
-              error={Boolean(touched.lastName && errors.lastName)}
-              helperText={touched.lastName && errors.lastName}
+              label="Name"
+              {...getFieldProps('displayName')}
+              error={Boolean(touched.displayName && errors.displayName)}
+              helperText={touched.displayName && errors.displayName}
             />
           </Stack>
 
@@ -116,7 +128,20 @@ export default function RegisterForm() {
             error={Boolean(touched.password && errors.password)}
             helperText={touched.password && errors.password}
           />
+          <TextField
+            fullWidth
+            autoComplete="address"
+            label="Address"
+            {...getFieldProps('address')}
+            error={Boolean(touched.address && errors.address)}
+            helperText={touched.address && errors.address}
+          />
 
+          <Mapbox onChangeLocation={handleChangeLocation} />
+          {Boolean(errors.longitude || errors.latitude) && (
+            <Typography variant='caption' sx={{ color: 'error.main' }}>Please pick a destination</Typography>
+
+          )}
           <LoadingButton fullWidth size="large" type="submit" variant="contained" loading={isSubmitting}>
             Register
           </LoadingButton>

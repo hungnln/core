@@ -10,6 +10,7 @@ import { MIconButton } from 'src/components/@material-extend';
 import { Icon } from '@mui/material';
 import closeFill from '@iconify/icons-eva/close-fill';
 import { useSnackbar } from 'notistack';
+import user from 'src/redux/slices/user';
 // ----------------------------------------------------------------------
 
 const initialState = {
@@ -127,14 +128,30 @@ function AuthProvider({ children }) {
           setSession(accessToken);
           const x = JSON.parse(atob(accessToken.split('.')[1]))
           const type = x.role === userRole.admin ? 'admin' : 'shops'
-          const response = await axios.get(`/api/v1.0/${type}/${x.id}`);
-          console.log('check respone', response);
-          const account = response.data.data;
-          dispatch({
-            type: 'INITIALIZE',
-            payload: { isAuthenticated: true, user: { id: account.id, displayName: account.displayName, email: account.email, role: x.role, photoURL: account.photoUrl } }
+          if (type === 'admin') {
+            dispatch({
+              type: 'INITIALIZE',
+              // xai tam
+              payload: { isAuthenticated: true, user: { role: userRole.admin, displayName: 'Admin', id: x.id, email: x.email, photoURL: '' } }
 
-          })
+
+              // payload: { isAuthenticated: true, user: { id: account.id, displayName: account.name, email: account.email, role: 'User', photoURL: account.imageURL }, isInitialized: true }
+            })
+          } else {
+            const response = await axios.get(`/api/v1.0/${type}/${x.id}`);
+            console.log('check respone', response);
+            const account = response.data.data;
+            dispatch({
+              type: 'INITIALIZE',
+              payload: {
+                isAuthenticated: true, user: {
+                  id: account.id, displayName: account.displayName, email: account.email, role: x.role, photoURL: account.photoUrl
+                }
+              }
+
+            })
+          }
+
         }
         //   else {
         //     console.log('check  firebase');
@@ -249,17 +266,21 @@ function AuthProvider({ children }) {
     }
   };
 
-  const register = async (values, isAdmin) => {
-    const response = await axios.post('/api/v1.0/shops/register', values);
-    const { accessToken, user } = response.data;
-
-    window.localStorage.setItem('accessToken', accessToken);
-    dispatch({
-      type: 'REGISTER',
-      payload: {
-        user
-      }
-    });
+  const register = async (values, callback) => {
+    try {
+      const response = await axios.post('/api/v1.0/shops/register', values);
+      // const { accessToken, user } = response.data;
+      callback(response.data)
+      // window.localStorage.setItem('accessToken', accessToken);
+    } catch (error) {
+      callback(error.response.data)
+    }
+    // dispatch({
+    //   type: 'REGISTER',
+    //   payload: {
+    //     user
+    //   }
+    // });
   };
 
   // const logout = async () => {

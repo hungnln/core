@@ -135,7 +135,7 @@ export function approvedPackages(id, callback) {
     return async (dispatch) => {
         dispatch(slice.actions.startLoading());
         try {
-            const response = await axios.put(`/api/v1.0/packages/approve?packageId?=${id}`);
+            const response = await axios.put(`/api/v1.0/packages/approve?packageId=${id}`);
             // dispatch(slice.actions.createOrder(response.data.data));
             callback({ response: response.data })
         } catch (error) {
@@ -148,7 +148,7 @@ export function rejectPackages(id, callback) {
     return async (dispatch) => {
         dispatch(slice.actions.startLoading());
         try {
-            const response = await axios.put(`/api/v1.0/packages/reject?packageId?=${id}`);
+            const response = await axios.put(`/api/v1.0/packages/reject?packageId=${id}`);
             // dispatch(slice.actions.createOrder(response.data.data));
             callback({ response: response.data })
         } catch (error) {

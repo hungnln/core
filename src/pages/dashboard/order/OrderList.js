@@ -35,7 +35,7 @@ import SearchNotFound from 'src/components/SearchNotFound';
 import { useDispatch, useSelector } from 'src/redux/store';
 import { token } from 'src/utils/axios';
 import useAuth from 'src/hooks/useAuth';
-import { userRole } from 'src/config';
+import { PackageStatus, userRole } from 'src/config';
 import moment from 'moment/moment';
 // redux
 
@@ -91,7 +91,7 @@ function applySortFilter(array, comparator, query) {
         return a[1] - b[1];
     });
     if (query) {
-        return filter(array, (_order) => _order.name.toLowerCase().indexOf(query.toLowerCase()) !== -1);
+        return filter(array, (_order) => _order.id.toLowerCase().indexOf(query.toLowerCase()) !== -1);
     }
     return stabilizedThis.map((el) => el[0]);
 }
@@ -240,7 +240,7 @@ export default function OrderList() {
                                 />
                                 <TableBody>
                                     {filteredOrders.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
-                                        const { id, destinationAddress, shopId, receiverName, receiverPhone, priceShip, createdAt, status, shipperId, note } = row;
+                                        const { id, shop, shipper, destinationAddress, shopId, receiverName, receiverPhone, priceShip, createdAt, status, shipperId, note } = row;
                                         // const isItemSelected = selected.indexOf(name) !== -1;
 
                                         return (
@@ -261,7 +261,7 @@ export default function OrderList() {
                                                             {/* <Avatar alt={name} src={avatarUrl} /> */}
                                                             <Stack direction="column" spacing={1}>
                                                                 <Typography variant="subtitle2" noWrap>
-                                                                    {shopId}
+                                                                    {shop.displayName}
                                                                 </Typography>
                                                                 {/* <Typography variant="body2" noWrap>
                                                                     {destinationAddress}
@@ -285,14 +285,23 @@ export default function OrderList() {
                                                     </TableCell>
                                                 )}
                                                 <TableCell align="left">{moment(createdAt).format('DD-MM-YYYY HH:mm')}</TableCell>
-                                                <TableCell align="left">{shipperId || 'Not found'}</TableCell>
+                                                <TableCell align="left">{shipper && (
+                                                    <>
+                                                        <Typography variant="subtitle2" noWrap>
+                                                            {shipper.displayName}
+                                                        </Typography>
+                                                        <Typography variant="body2" noWrap>
+                                                            {shipper.phoneNumber}
+                                                        </Typography>
+                                                    </>
+                                                ) || 'Not found'}</TableCell>
 
                                                 <TableCell align="left">{priceShip}</TableCell>
                                                 {/* <TableCell align="left">{isVerified ? 'Yes' : 'No'}</TableCell> */}
                                                 <TableCell align="left">
                                                     <Label
                                                         variant={theme.palette.mode === 'light' ? 'ghost' : 'filled'}
-                                                        color={(status === 'banned' && 'error') || 'success'}
+                                                        color={(status === PackageStatus.deliveryFailed || status === PackageStatus.reject && 'error') || 'success'}
                                                     >
                                                         {sentenceCase(status)}
                                                     </Label>

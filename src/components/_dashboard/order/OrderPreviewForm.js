@@ -2,7 +2,7 @@ import * as Yup from 'yup';
 import PropTypes from 'prop-types';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSnackbar } from 'notistack';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { Field, FieldArray, Form, FormikProvider, useFormik } from 'formik';
 // material
 import { DateTimePicker, DesktopDatePicker, LoadingButton } from '@mui/lab';
@@ -32,28 +32,62 @@ import { format } from 'date-fns';
 import { PackageStatus, userRole } from 'src/config';
 import useAuth from 'src/hooks/useAuth';
 import moment from 'moment';
+import EditIcon from '@mui/icons-material/Edit';
 // ----------------------------------------------------------------------
 
 OrderPreviewForm.propTypes = {
   currentOrder: PropTypes.object
 };
 
-export default function OrderPreviewForm({ currentOrder }) {
+export default function OrderPreviewForm() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [message, setMessage] = useState()
   const theme = useTheme();
+  const { id } = useParams()
   const { enqueueSnackbar } = useSnackbar();
-  // const { currentOrder } = useSelector(state => state.currentOrder)
+  const { currentOrder } = useSelector(state => state.order)
   const { user } = useAuth();
   const isAdmin = user.role === userRole.admin
-  const { id, startAddress, shop, shipper, shipperId, destinationAddress, receiverName, receiverPhone, createdAt, status, products, priceShip, note, volume, weight, distance, shopId } = currentOrder;
+  const { startAddress, shop, shipper, shipperId, destinationAddress, receiverName, receiverPhone, createdAt, status, products, priceShip, note, volume, weight, distance, shopId } = currentOrder;
   function subtotal(items) {
     return items?.map(({ price }) => price).reduce((sum, i) => sum + i, 0);
   }
   const packagesSubtotal = subtotal(products);
+  useEffect(() => {
+    dispatch(getOrderDetail(id))
+  }, [dispatch])
+  const handleMessage = (object) => {
+    if (object !== null) {
+      enqueueSnackbar(object.message, { variant: object.success ? 'success' : 'error' })
+    }
+  }
   return (
     <>
+      <Stack direction='row' justifyContent="space-between" spacing={2} sx={{ mb: 5 }}>
+
+        <Box>
+          {!isAdmin && (
+            <Stack direction='row'>
+              <IconButton color="primary" sx={{ py: 1 }}>
+                <EditIcon />
+              </IconButton>
+            </Stack>
+          )}
+        </Box>
+        <Stack direction='row' spacing={2}>
+          {status === PackageStatus.waiting && isAdmin && (
+            <>
+              <Button size='large' variant="outlined" color='error' onClick={() => { dispatch(rejectPackages(id, callback => handleMessage(callback))) }} >Reject</Button>
+              <LoadingButton type="submit" variant="contained" onClick={() => { dispatch(approvedPackages(id, callback => handleMessage(callback))) }}>
+                Approved
+              </LoadingButton>
+            </>
+          )}
+
+        </Stack>
+
+      </Stack>
       <Paper elevation={0} variant="outlined" sx={{ p: 5 }}>
         <Grid container spacing={2}>
           <Grid item xs={6} mb={5}>
@@ -62,7 +96,7 @@ export default function OrderPreviewForm({ currentOrder }) {
           <Grid item xs={6} mb={5} sx={{ textAlign: 'right' }}>
             <Label
               variant={theme.palette.mode === 'light' ? 'ghost' : 'filled'}
-              color={(status === 'banned' && 'error') || 'success'}
+              color={(status === PackageStatus.reject && 'error') || 'success'}
               sx={{ mb: 1 }}
             >
               {_.upperCase(status)}
@@ -72,7 +106,7 @@ export default function OrderPreviewForm({ currentOrder }) {
           <Grid item xs={6} mb={5}>
             <Typography variant='overline' sx={{ color: 'text.secondary', mb: 2 }}>PACKAGES FROM</Typography>
             <Typography variant='body2'>{shop?.displayName}</Typography>
-            <Typography variant='body2'>{destinationAddress}</Typography>
+            <Typography variant='body2'>{startAddress}</Typography>
             <Typography variant='body2'>Phone : {shop?.phoneNumber}</Typography>
           </Grid>
           <Grid item xs={6} mb={5}>
@@ -225,16 +259,7 @@ export default function OrderPreviewForm({ currentOrder }) {
         </Box> */}
 
       </Paper >
-      <Stack direction='row' justifyContent="flex-end" spacing={2} sx={{ mt: 3 }}>
-        {status === PackageStatus.waiting && isAdmin && (
-          <>
-            <Button size='large' variant="outlined" color='error' onClick={() => { dispatch(rejectPackages(id, message => enqueueSnackbar(message?.message, { variant: message.success ? 'success' : 'error' }))) }} >Reject</Button>
-            <LoadingButton type="submit" variant="contained" onClick={() => { dispatch(approvedPackages(id, message => enqueueSnackbar(message?.message, { variant: message.success ? 'success' : 'error' }))) }}>
-              Approved
-            </LoadingButton>
-          </>
-        )}
-      </Stack>
+
       {/* <DialogAnimate open={isOpenModal} onClose={handleCloseModal}>
         <DialogTitle>Add address</DialogTitle>
         <AddressNewForm onCancel={handleCloseModal} currentAddress={values} onChange={handleChangeReceiverAddress} />

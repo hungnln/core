@@ -26,6 +26,7 @@ import { getShopbyId } from 'src/redux/slices/shop';
 import product from 'src/redux/slices/product';
 import { createOrder } from 'src/redux/slices/order';
 import _ from 'lodash';
+import useAuth from 'src/hooks/useAuth';
 // ----------------------------------------------------------------------
 
 OrderNewForm.propTypes = {
@@ -39,6 +40,7 @@ export default function OrderNewForm({ isEdit, currentOrder }) {
   const dispatch = useDispatch();
   const { enqueueSnackbar } = useSnackbar();
   const { shop } = useSelector(state => state.shop)
+  const { user } = useAuth();
   const [currentAddress, setCurrentAddress] = useState()
   const [isOpenModal, setOpenModal] = useState(false)
   const [errorState, setErrorState] = useState();
@@ -69,7 +71,7 @@ export default function OrderNewForm({ isEdit, currentOrder }) {
 
   useEffect(() => {
     dispatch(getShopbyId(shopId))
-  }, [])
+  }, [dispatch])
   const formik = useFormik({
     enableReinitialize: true,
     initialValues: {

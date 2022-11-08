@@ -16,16 +16,19 @@ import useIsMountedRef from '../../../hooks/useIsMountedRef';
 import { MIconButton } from '../../@material-extend';
 import Mapbox from 'src/components/_dashboard/map/Map';
 import { values } from 'lodash';
+import { PATH_AUTH, PATH_DASHBOARD } from 'src/routes/paths';
+import { Navigate, useNavigate } from 'react-router';
 
 // ----------------------------------------------------------------------
 
 export default function RegisterForm() {
   const { register } = useAuth();
+  const navigate = useNavigate();
   const isMountedRef = useIsMountedRef();
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
   const [showPassword, setShowPassword] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
-  const count = 0;
+  const [errorState, setErrorState] = useState();
   const RegisterSchema = Yup.object().shape({
     displayName: Yup.string().min(2, 'Too Short!').max(50, 'Too Long!').required('First name required'),
     phoneNumber: Yup.string().required('Phone is required'),
@@ -54,14 +57,13 @@ export default function RegisterForm() {
     validationSchema: RegisterSchema,
     onSubmit: async (values, { setErrors, setSubmitting }) => {
       try {
-        await register(values, isAdmin);
-        enqueueSnackbar('Register success', {
-          variant: 'success',
-          action: (key) => (
-            <MIconButton size="small" onClick={() => closeSnackbar(key)}>
-              <Icon icon={closeFill} />
-            </MIconButton>
-          )
+        await register(values, error => {
+          setErrors({ afterSubmit: error.message })
+          setErrorState(error)
+          if (error.success) {
+            enqueueSnackbar(error.message, { variant: 'success' });
+            navigate(PATH_AUTH.login)
+          }
         });
         if (isMountedRef.current) {
           setSubmitting(false);
@@ -82,7 +84,6 @@ export default function RegisterForm() {
 
 
   })
-  useEffect(() => { }, [count])
 
   const { values, errors, touched, handleSubmit, isSubmitting, getFieldProps, handleChange } = formik;
 

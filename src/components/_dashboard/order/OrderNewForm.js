@@ -8,7 +8,7 @@ import { Field, FieldArray, Form, FormikProvider, useFormik } from 'formik';
 import { DateTimePicker, DesktopDatePicker, LoadingButton } from '@mui/lab';
 import { Box, Card, Grid, Stack, Switch, TextField, Typography, FormHelperText, FormControlLabel, Paper, Divider, Button, InputAdornment, IconButton, DialogTitle } from '@mui/material';
 // utils
-import { fData } from '../../../utils/formatNumber';
+import { fCurrency, fData } from '../../../utils/formatNumber';
 import fakeRequest from '../../../utils/fakeRequest';
 // routes
 import { PATH_DASHBOARD } from '../../../routes/paths';
@@ -35,7 +35,6 @@ OrderNewForm.propTypes = {
 };
 
 export default function OrderNewForm({ isEdit, currentOrder }) {
-  const shopId = localStorage.getItem('userId');
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { enqueueSnackbar } = useSnackbar();
@@ -70,7 +69,7 @@ export default function OrderNewForm({ isEdit, currentOrder }) {
   });
 
   useEffect(() => {
-    dispatch(getShopbyId(shopId))
+    dispatch(getShopbyId(user.id))
   }, [dispatch])
   const formik = useFormik({
     enableReinitialize: true,
@@ -91,7 +90,7 @@ export default function OrderNewForm({ isEdit, currentOrder }) {
       priceShip: currentOrder?.priceShip || 10000,
       photoUrl: currentOrder?.photoUrl || '',
       note: currentOrder?.note || '',
-      shopId: currentOrder?.shopId || shopId,
+      shopId: currentOrder?.shopId || user.id,
       products: currentOrder?.products || [],
     },
     validationSchema: NewOrderSchema,
@@ -279,16 +278,16 @@ export default function OrderNewForm({ isEdit, currentOrder }) {
                       <Stack direction='column' justifyContent='space-between'>
                         <Stack direction='row' justifyContent='space-between'>
                           <Typography variant='body1' sx={{ color: 'text.secondary' }} >Subtotal: </Typography>
-                          <Typography variant='body1' sx={{ color: 'text.secondary' }} >${subTotal || 0}</Typography>
+                          <Typography variant='body1' sx={{ color: 'text.secondary' }} >{fCurrency(values.priceShip || 0)}</Typography>
 
                         </Stack >
                         <Stack direction='row' justifyContent='space-between' sx={{ mt: 0.5, mb: 1 }}>
                           <Typography variant='body1' sx={{ color: 'text.secondary' }} >Ship: </Typography>
-                          <Typography variant='body1' sx={{ color: 'text.secondary' }} >${values.priceShip}</Typography>
+                          <Typography variant='body1' sx={{ color: 'text.secondary' }} >{fCurrency(values.priceShip)}</Typography>
                         </Stack>
                         <Stack direction='row' justifyContent='space-between'>
                           <Typography variant='h6'  >Total: </Typography>
-                          <Typography variant='h6'  >${Number(subTotal + values.priceShip) || 0}</Typography>
+                          <Typography variant='h6'  >{fCurrency((subTotal + values.priceShip) || 0)}</Typography>
                         </Stack>
 
                       </Stack>

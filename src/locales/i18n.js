@@ -5,6 +5,7 @@ import LanguageDetector from 'i18next-browser-languagedetector';
 import enLocales from './en.json';
 import deLocales from './de.json';
 import frLocales from './fr.json';
+import vnLocales from './vn.json';
 
 // ----------------------------------------------------------------------
 
@@ -15,7 +16,8 @@ i18n
     resources: {
       en: { translations: enLocales },
       de: { translations: deLocales },
-      fr: { translations: frLocales }
+      fr: { translations: frLocales },
+      vn: { translations: vnLocales }
     },
     lng: localStorage.getItem('i18nextLng') || 'en',
     fallbackLng: 'en',

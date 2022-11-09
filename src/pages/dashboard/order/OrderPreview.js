@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { paramCase } from 'change-case';
 import { useParams, useLocation } from 'react-router-dom';
 // material
@@ -18,6 +18,8 @@ import { PATH_DASHBOARD } from 'src/routes/paths';
 import { token } from 'src/utils/axios';
 import OrderPreviewForm from 'src/components/_dashboard/order/OrderPreviewForm';
 import useAuth from 'src/hooks/useAuth';
+import _ from 'lodash';
+import LoadingScreen from 'src/components/LoadingScreen';
 
 // ----------------------------------------------------------------------
 
@@ -26,26 +28,50 @@ export default function OrderPreview() {
     const dispatch = useDispatch();
     const { pathname } = useLocation();
     const { id } = useParams();
+    const [loading, setLoading] = useState(true);
     const { currentOrder } = useSelector((state) => state.order);
     const isEdit = pathname.includes('edit');
     // const currentOrder = orderList.find((order) => order.id === id);
     useEffect(() => {
         dispatch(getOrderDetail(id))
     }, [dispatch]);
+    useEffect(() => {
+        const delay = setTimeout(() => {
+            if (!_.isEmpty(currentOrder)) {
+                setLoading(false);
+            }
 
+        }, 2000)
+        return () => {
+            clearTimeout(delay)
+        }
+    }, [currentOrder])
+
+    useEffect(() => {
+        const getDetail = setInterval(() => {
+            dispatch(getOrderDetail(id))
+        }, 10000);
+        return () => clearTimeout(getDetail);
+    }, [])
     return (
-        <Page title="Order: Create a new order | Minimal-UI">
+        <Page title="Order: Preview order | Minimal-UI">
             <Container maxWidth={themeStretch ? false : 'lg'}>
-                <HeaderBreadcrumbs
-                    heading='Packages Detail'
-                    links={[
-                        { name: 'Dashboard', href: PATH_DASHBOARD.root },
-                        { name: 'Order', href: PATH_DASHBOARD.order.root },
-                        { name: id }
-                    ]}
-                />
+                {loading ?
+                    <LoadingScreen sx={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }} />
+                    : (<>
+                        <HeaderBreadcrumbs
+                            heading='Packages Detail'
+                            links={[
+                                { name: 'Dashboard', href: PATH_DASHBOARD.root },
+                                { name: 'Order', href: PATH_DASHBOARD.order.root },
+                                { name: id }
+                            ]}
+                        />
+                        <OrderPreviewForm currentOrder={currentOrder} />
+                    </>)
+                }
 
-                <OrderPreviewForm currentOrder={currentOrder} />
+
             </Container>
         </Page>
     );

@@ -37,6 +37,7 @@ import { token } from 'src/utils/axios';
 import useAuth from 'src/hooks/useAuth';
 import { PackageStatus, userRole } from 'src/config';
 import moment from 'moment/moment';
+import { fCurrency } from 'src/utils/formatNumber';
 // redux
 
 // routes
@@ -176,6 +177,9 @@ export default function OrderList() {
     const handleChange = (event, newValue) => {
         setValue(newValue);
     };
+    const packageStatusColor = {
+
+    }
 
     return (
         <Page title="Order: List | Minimal-UI">
@@ -277,7 +281,7 @@ export default function OrderList() {
                                                                 <Typography variant="subtitle2" noWrap>
                                                                     {receiverName}
                                                                 </Typography>
-                                                                <Typography variant="body2" noWrap>
+                                                                <Typography variant="body2" noWrap sx={{ color: 'text.secondary' }}>
                                                                     {destinationAddress}
                                                                 </Typography>
                                                             </Stack>
@@ -286,22 +290,22 @@ export default function OrderList() {
                                                 )}
                                                 <TableCell align="left">{moment(createdAt).format('DD-MM-YYYY HH:mm')}</TableCell>
                                                 <TableCell align="left">{shipper && (
-                                                    <>
+                                                    <Stack direction="column" spacing={1}>
                                                         <Typography variant="subtitle2" noWrap>
                                                             {shipper.displayName}
                                                         </Typography>
-                                                        <Typography variant="body2" noWrap>
+                                                        <Typography variant="body2" noWrap sx={{ color: 'text.secondary' }}>
                                                             {shipper.phoneNumber}
                                                         </Typography>
-                                                    </>
+                                                    </Stack>
                                                 ) || 'Not found'}</TableCell>
 
-                                                <TableCell align="left">{priceShip}</TableCell>
+                                                <TableCell align="left">{fCurrency(priceShip)}</TableCell>
                                                 {/* <TableCell align="left">{isVerified ? 'Yes' : 'No'}</TableCell> */}
                                                 <TableCell align="left">
                                                     <Label
                                                         variant={theme.palette.mode === 'light' ? 'ghost' : 'filled'}
-                                                        color={(status === PackageStatus.deliveryFailed || status === PackageStatus.reject && 'error') || 'success'}
+                                                        color={(status === PackageStatus.deliveryFailed || status === PackageStatus.reject && 'error') || (status === PackageStatus.waiting && 'warning') || 'success'}
                                                     >
                                                         {sentenceCase(status)}
                                                     </Label>

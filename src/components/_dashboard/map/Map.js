@@ -1,4 +1,4 @@
-import mapboxgl from 'mapbox-gl';
+import mapboxgl, { Marker } from 'mapbox-gl';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 function Mapbox({ currentAddress, onChangeLocation }) {
@@ -22,18 +22,23 @@ function Mapbox({ currentAddress, onChangeLocation }) {
     //         onChangeLocation(e)
     //     });
     // });
-
     useEffect(() => {
         if (map.current) return; // initialize map only once
         map.current = new mapboxgl.Map({
             container: mapContainer.current,
             style: 'mapbox://styles/mapbox/streets-v11',
             center: [lng, lat],
-            zoom
+            zoom,
+
         });
+        new mapboxgl.Marker({ color: '#63df29', scale: 1.5 })
+            .setLngLat([lng, lat])
+            .addTo(map.current);
         map.current.on('click', (e) => {
             onChangeLocation(e)
         });
+
+
     });
     return (
         <div>

@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { paramCase } from 'change-case';
 import { useParams, useLocation } from 'react-router-dom';
 // material
@@ -16,6 +16,8 @@ import HeaderBreadcrumbs from '../../../components/HeaderBreadcrumbs';
 import OrderNewForm from '../../../components/_dashboard/order/OrderNewForm';
 import { PATH_DASHBOARD } from 'src/routes/paths';
 import { token } from 'src/utils/axios';
+import _ from 'lodash';
+import LoadingScreen from 'src/components/LoadingScreen';
 
 // ----------------------------------------------------------------------
 
@@ -25,25 +27,45 @@ export default function OrderCreate() {
     const { pathname } = useLocation();
     const { id } = useParams();
     const { currentOrder } = useSelector((state) => state.order);
+    const [loading, setLoading] = useState(true);
     const isEdit = pathname.includes('edit');
     useEffect(() => {
-        console.log('id', id);
-        dispatch(getOrderDetail(id))
+        if (id) {
+            dispatch(getOrderDetail(id))
+        }
     }, [dispatch]);
+    useEffect(() => {
+        const delay = setTimeout(() => {
+            if (!_.isEmpty(currentOrder) && currentOrder.id === id) {
+                setLoading(false)
+            }
+
+        }, 500)
+        return () => {
+            clearTimeout(delay)
+        }
+    }, [currentOrder])
 
     return (
         <Page title="Order: Create a new order | Minimal-UI">
             <Container maxWidth={themeStretch ? false : 'lg'}>
-                <HeaderBreadcrumbs
-                    heading={!isEdit ? 'Create a new order' : 'Edit order'}
-                    links={[
-                        { name: 'Dashboard', href: PATH_DASHBOARD.root },
-                        { name: 'Order', href: PATH_DASHBOARD.order.root },
-                        { name: !isEdit ? 'New order' : id }
-                    ]}
-                />
+                {loading ?
+                    <LoadingScreen sx={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }} />
+                    : (
+                        <>
+                            <HeaderBreadcrumbs
+                                heading={!isEdit ? 'Create a new order' : 'Edit order'}
+                                links={[
+                                    { name: 'Dashboard', href: PATH_DASHBOARD.root },
+                                    { name: 'Order', href: PATH_DASHBOARD.order.root },
+                                    { name: !isEdit ? 'New order' : id }
+                                ]}
+                            />
 
-                <OrderNewForm isEdit={isEdit} currentOrder={isEdit ? currentOrder : {}} />
+                            <OrderNewForm isEdit={isEdit} currentOrder={isEdit ? currentOrder : {}} />
+                        </>
+                    )
+                }
             </Container>
         </Page>
     );

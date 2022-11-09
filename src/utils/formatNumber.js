@@ -3,8 +3,16 @@ import numeral from 'numeral';
 
 // ----------------------------------------------------------------------
 
+// export function fCurrency(number) {
+//   return numeral(number).format(Number.isInteger(number) ? '$0,0' : '$0,0.00');
+// }
+const formatter = new Intl.NumberFormat('it-IT', {
+  style: 'currency',
+  currency: 'VND',
+})
+
 export function fCurrency(number) {
-  return numeral(number).format(Number.isInteger(number) ? '$0,0' : '$0,0.00');
+  return formatter.format(number)
 }
 
 export function fPercent(number) {

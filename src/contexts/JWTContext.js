@@ -145,7 +145,7 @@ function AuthProvider({ children }) {
               type: 'INITIALIZE',
               payload: {
                 isAuthenticated: true, user: {
-                  id: account.id, displayName: account.displayName, email: account.email, role: x.role, photoURL: account.photoUrl
+                  id: account.id, displayName: account.displayName, email: account.email, role: x.role, photoURL: account.photoUrl,
                 }
               }
 

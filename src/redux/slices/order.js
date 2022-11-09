@@ -52,6 +52,8 @@ const slice = createSlice({
         changePackagesStatus(state, action) {
             state.isLoading = false;
             state.error = false;
+            const newPackageStatus = action.payload;
+            state.currentOrder = [...state.currentOrder, ...newPackageStatus]
 
         }
 
@@ -136,7 +138,6 @@ export function approvedPackages(id, callback) {
         dispatch(slice.actions.startLoading());
         try {
             const response = await axios.put(`/api/v1.0/packages/approve?packageId=${id}`);
-            // dispatch(slice.actions.createOrder(response.data.data));
             callback({ response: response.data })
         } catch (error) {
             callback(error.response.data)
@@ -149,7 +150,6 @@ export function rejectPackages(id, callback) {
         dispatch(slice.actions.startLoading());
         try {
             const response = await axios.put(`/api/v1.0/packages/reject?packageId=${id}`);
-            // dispatch(slice.actions.createOrder(response.data.data));
             callback({ response: response.data })
         } catch (error) {
             callback(error.response.data)
@@ -157,6 +157,31 @@ export function rejectPackages(id, callback) {
         }
     }
 }
+export function confirmDeliverySuccess(id, callback) {
+    return async (dispatch) => {
+        dispatch(slice.actions.startLoading());
+        try {
+            const response = await axios.put(`/api/v1.0/packages/shop-confirm-delivery-success?packageId=${id}`);
+            callback({ response: response.data })
+        } catch (error) {
+            callback(error.response.data)
+            dispatch(slice.actions.hasError(error));
+        }
+    }
+}
+export function cancelPackage(id, callback) {
+    return async (dispatch) => {
+        dispatch(slice.actions.startLoading());
+        try {
+            const response = await axios.put(`/api/v1.0/packages/shop-cancel?packageId=${id}`);
+            callback({ response: response.data })
+        } catch (error) {
+            callback(error.response.data)
+            dispatch(slice.actions.hasError(error));
+        }
+    }
+}
+
 // export function createOrder(values, callback) {
 //     return async (dispatch) => {
 //         dispatch(slice.actions.startLoading());

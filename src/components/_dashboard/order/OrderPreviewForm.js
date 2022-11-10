@@ -6,7 +6,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { Field, FieldArray, Form, FormikProvider, useFormik } from 'formik';
 // material
 import { DateTimePicker, DesktopDatePicker, LoadingButton } from '@mui/lab';
-import { Box, Card, Grid, Stack, Switch, TextField, Typography, FormHelperText, FormControlLabel, Paper, Divider, Button, InputAdornment, IconButton, DialogTitle, TableContainer, TableHead, TableRow, TableCell, TableBody, Table } from '@mui/material';
+import { Box, Card, Grid, Stack, Switch, TextField, Typography, FormHelperText, FormControlLabel, Paper, Divider, Button, InputAdornment, IconButton, DialogTitle, TableContainer, TableHead, TableRow, TableCell, TableBody, Table, Avatar } from '@mui/material';
 // utils
 import { fCurrency, fData } from '../../../utils/formatNumber';
 import fakeRequest from '../../../utils/fakeRequest';
@@ -35,6 +35,7 @@ import moment from 'moment';
 import EditIcon from '@mui/icons-material/Edit';
 import PrintIcon from '@mui/icons-material/Print';
 import VisibilityIcon from '@mui/icons-material/Visibility';
+import InfoIcon from '@mui/icons-material/Info';
 // ----------------------------------------------------------------------
 
 OrderPreviewForm.propTypes = {
@@ -50,6 +51,7 @@ export default function OrderPreviewForm() {
   const { enqueueSnackbar } = useSnackbar();
   const { currentOrder } = useSelector(state => state.order)
   const { user } = useAuth();
+  const [isOpenModal, setOpenModal] = useState(false)
   const isAdmin = user.role === userRole.admin
   const { startAddress, shop, shipper, shipperId, destinationAddress, receiverName, receiverPhone, createdAt, status, products, priceShip, note, volume, weight, distance, shopId } = currentOrder;
   function subtotal(items) {
@@ -65,6 +67,9 @@ export default function OrderPreviewForm() {
       enqueueSnackbar(response.message, { variant: response.success ? 'success' : 'error' })
     }
   }
+  const handleCloseModal = () => {
+    setOpenModal(!isOpenModal);
+  };
   return (
     <>
       <Stack direction='row' justifyContent="space-between" spacing={2} sx={{ mb: 5 }}>
@@ -105,22 +110,18 @@ export default function OrderPreviewForm() {
           {/* Shop confirm đơn hàng đc giao thành công  */}
           {status === PackageStatus.delivered && !isAdmin && (
             <LoadingButton type="submit" variant="contained" onClick={() => { dispatch(confirmDeliverySuccess(id, callback => handleMessage(callback))) }}>
-              Approved
+              Confirm
             </LoadingButton>
           )}
           {/* ---------------end------------------ */}
 
           {/* Shop cancel đơn hàng  */}
-          {/* {status === PackageStatus.delivered && !isAdmin && (
-            <LoadingButton type="submit" variant="contained" onClick={() => { dispatch(cancelPackage(id, callback => handleMessage(callback))) }}>
-              Approved
+          {(status === PackageStatus.approved || status === PackageStatus.shipperPickup || status === PackageStatus.waiting) && !isAdmin && (
+            <LoadingButton color='error' type="submit" variant="contained" onClick={() => { dispatch(cancelPackage(id, callback => handleMessage(callback))) }}>
+              Cancel
             </LoadingButton>
-          )} */}
+          )}
           {/* ---------------end------------------ */}
-
-
-
-
 
         </Stack>
 
@@ -136,14 +137,14 @@ export default function OrderPreviewForm() {
             Logo
           </Grid>
           <Grid item xs={6} mb={5} sx={{ textAlign: 'right' }}>
-            <Label
-              variant={theme.palette.mode === 'light' ? 'ghost' : 'filled'}
+            <Button onClick={handleCloseModal}
+              variant='contained'
               color={(status === PackageStatus.deliveryFailed || status === PackageStatus.reject && 'error') || (status === PackageStatus.waiting && 'warning') || 'success'}
 
               sx={{ mb: 1 }}
             >
               {_.upperCase(status)}
-            </Label>
+            </Button>
             <Typography variant='h6'>{id}</Typography>
           </Grid>
           <Grid item xs={6} mb={5}>
@@ -284,7 +285,7 @@ export default function OrderPreviewForm() {
                         <Typography variant='body1' sx={{ color: 'text.secondary' }} >${subTotal || 0}</Typography>
 
                       </Stack >
-                      <Stack direction='row' justifyContent='space-between' sx={{ mt: 0.5, mb: 1 }}>
+                      <Stack direction='row' v sx={{ mt: 0.5, mb: 1 }}>
                         <Typography variant='body1' sx={{ color: 'text.secondary' }} >Ship: </Typography>
                         <Typography variant='body1' sx={{ color: 'text.secondary' }} >${values.priceShip}</Typography>
                       </Stack>
@@ -302,11 +303,47 @@ export default function OrderPreviewForm() {
         </Box> */}
 
       </Paper >
+      <DialogAnimate open={isOpenModal} onClose={handleCloseModal}>
+        <DialogTitle>Shipper information</DialogTitle>
+        {/* <AddressNewForm onCancel={handleCloseModal} currentAddress={values} onChange={handleChangeReceiverAddress} /> */}
+        <Stack direction='column' spacing={3} sx={{ p: 3 }} justifyContent='center'>
 
-      {/* <DialogAnimate open={isOpenModal} onClose={handleCloseModal}>
-        <DialogTitle>Add address</DialogTitle>
-        <AddressNewForm onCancel={handleCloseModal} currentAddress={values} onChange={handleChangeReceiverAddress} />
-      </DialogAnimate> */}
+          {shipper && (<>
+            <Stack
+              sx={{ my: 2 }}
+              justifyContent="center"
+              alignItems="center">
+              <Avatar
+                alt={shipper.userName}
+                src={shipper.photoUrl}
+                // src={shipper.photoUrl}
+                sx={{ width: 100, height: 100 }}
+              />
+            </Stack>
+            <Stack direction='row' justifyContent='space-between' spacing={1} sx={{ px: 4 }}>
+              <Typography variant='body1'  >Display Name: </Typography>
+              <Typography variant='h6' sx={{ color: 'text.secondary', ml: 1 }} >{shipper.displayName} </Typography>
+            </Stack>
+            <Stack direction='row' justifyContent='space-between' spacing={1} sx={{ px: 4 }}>
+              <Typography variant='body1'  >Email: </Typography>
+              <Typography variant='h6' sx={{ color: 'text.secondary', ml: 1 }} >{shipper.email} </Typography>
+            </Stack>
+            <Stack direction='row' justifyContent='space-between' spacing={1} sx={{ px: 4 }}>
+              <Typography variant='body1'  >Phone Number: </Typography>
+              <Typography variant='h6' sx={{ color: 'text.secondary', ml: 1 }} >{shipper.phoneNumber} </Typography>
+            </Stack>
+          </>)}
+          {!shipper && (
+            <Stack direction='row' justifyContent='space-evenly' spacing={1} sx={{ p: 4 }}>
+              <InfoIcon color='info' />
+              <Typography variant='h6' sx={{ color: 'text.info', ml: 1 }} >Chưa có thông tin shipper</Typography>
+            </Stack>
+          )}
+
+
+
+        </Stack>
+      </DialogAnimate>
     </>
   );
 }

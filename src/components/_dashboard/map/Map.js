@@ -31,10 +31,16 @@ function Mapbox({ currentAddress, onChangeLocation }) {
             zoom,
 
         });
-        new mapboxgl.Marker({ color: '#63df29', scale: 1.5 })
-            .setLngLat([lng, lat])
-            .addTo(map.current);
+        if (currentAddress) {
+            new mapboxgl.Marker({ color: '#63df29', scale: 1.5 })
+                .setLngLat([currentAddress.longitude, currentAddress.latitude])
+                .addTo(map.current);
+        }
         map.current.on('click', (e) => {
+            console.log('e', e);
+            new mapboxgl.Marker({ color: '#63df29', scale: 1.5 })
+                .setLngLat([e.lngLat.lng, e.lngLat.lat])
+                .addTo(map.current);
             onChangeLocation(e)
         });
 

@@ -115,8 +115,7 @@ export default function OrderList() {
         if (isAdmin) {
             dispatch(getOrderListByAdmin())
         } else {
-            const userId = localStorage.getItem('userId')
-            dispatch(getOrderListByShopId(userId));
+            dispatch(getOrderListByShopId(user.id));
         }
     }, [dispatch]);
 

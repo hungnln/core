@@ -35,15 +35,18 @@ export default function OrderCreate() {
         }
     }, [dispatch]);
     useEffect(() => {
-        const delay = setTimeout(() => {
-            if (!_.isEmpty(currentOrder) && currentOrder.id === id) {
-                setLoading(false)
-            }
+        if (isEdit) {
+            const delay = setTimeout(() => {
+                if (!_.isEmpty(currentOrder) && currentOrder.id === id) {
+                    setLoading(false)
+                }
 
-        }, 500)
-        return () => {
-            clearTimeout(delay)
+            }, 500)
+            return () => {
+                clearTimeout(delay)
+            }
         }
+        setLoading(false)
     }, [currentOrder])
 
     return (

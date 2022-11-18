@@ -5,7 +5,7 @@ import { useParams, useLocation } from 'react-router-dom';
 import { Container } from '@mui/material';
 // redux
 import { useDispatch, useSelector } from '../../../redux/store';
-import { getOrderDetail, getOrderListByShopId } from '../../../redux/slices/order';
+import { getOrderDetail, getOrderListByAdmin, getOrderListByShopId } from '../../../redux/slices/order';
 // routes
 
 // hooks
@@ -16,59 +16,62 @@ import HeaderBreadcrumbs from '../../../components/HeaderBreadcrumbs';
 import OrderNewForm from '../../../components/_dashboard/order/OrderNewForm';
 import { PATH_DASHBOARD } from 'src/routes/paths';
 import { token } from 'src/utils/axios';
+import OrderPreviewForm from 'src/components/_dashboard/order/OrderPreviewForm';
+import useAuth from 'src/hooks/useAuth';
 import _ from 'lodash';
 import LoadingScreen from 'src/components/LoadingScreen';
 
 // ----------------------------------------------------------------------
 
-export default function OrderCreate() {
+export default function OrderPreview() {
     const { themeStretch } = useSettings();
     const dispatch = useDispatch();
     const { pathname } = useLocation();
     const { id } = useParams();
-    const { currentOrder } = useSelector((state) => state.order);
     const [loading, setLoading] = useState(true);
+    const { currentOrder } = useSelector((state) => state.order);
     const isEdit = pathname.includes('edit');
+    // const currentOrder = orderList.find((order) => order.id === id);
     useEffect(() => {
-        if (id) {
-            dispatch(getOrderDetail(id))
-        }
+        dispatch(getOrderDetail(id))
     }, [dispatch]);
     useEffect(() => {
-        if (isEdit) {
-            const delay = setTimeout(() => {
-                if (!_.isEmpty(currentOrder) && currentOrder.id === id) {
-                    setLoading(false)
-                }
-
-            }, 500)
-            return () => {
-                clearTimeout(delay)
+        const delay = setTimeout(() => {
+            if (!_.isEmpty(currentOrder)) {
+                setLoading(false);
             }
+
+        }, 2000)
+        return () => {
+            clearTimeout(delay)
         }
-        setLoading(false)
     }, [currentOrder])
 
+    useEffect(() => {
+        const getDetail = setInterval(() => {
+            dispatch(getOrderDetail(id))
+        }, 10000);
+        return () => clearTimeout(getDetail);
+    }, [])
     return (
-        <Page title="Order: Create a new order | Minimal-UI">
+        <Page title="Order: Preview order | Minimal-UI">
             <Container maxWidth={themeStretch ? false : 'lg'}>
                 {loading ?
                     <LoadingScreen sx={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }} />
-                    : (
-                        <>
-                            <HeaderBreadcrumbs
-                                heading={!isEdit ? 'Create a new order' : 'Edit order'}
-                                links={[
-                                    { name: 'Dashboard', href: PATH_DASHBOARD.root },
-                                    { name: 'Order', href: PATH_DASHBOARD.order.root },
-                                    { name: !isEdit ? 'New order' : id }
-                                ]}
-                            />
-
-                            <OrderNewForm isEdit={isEdit} currentOrder={isEdit ? currentOrder : {}} />
-                        </>
-                    )
+                    : (<>
+                        <HeaderBreadcrumbs
+                            heading='Packages Detail'
+                            links={[
+                                { name: 'Dashboard', href: PATH_DASHBOARD.root },
+                                { name: 'Order', href: PATH_DASHBOARD.order.root },
+                                { name: id }
+                            ]}
+                        />
+                        <OrderPreviewForm currentOrder={currentOrder} />
+                    </>)
                 }
+
+
             </Container>
         </Page>
     );

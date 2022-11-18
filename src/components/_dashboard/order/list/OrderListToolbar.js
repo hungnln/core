@@ -5,7 +5,8 @@ import trash2Fill from '@iconify/icons-eva/trash-2-fill';
 import roundFilterList from '@iconify/icons-ic/round-filter-list';
 // material
 import { useTheme, styled } from '@mui/material/styles';
-import { Box, Toolbar, Tooltip, IconButton, Typography, OutlinedInput, InputAdornment } from '@mui/material';
+import { Box, Toolbar, Tooltip, IconButton, Typography, OutlinedInput, InputAdornment, Select, MenuItem } from '@mui/material';
+import { PackageStatus } from 'src/config';
 
 // ----------------------------------------------------------------------
 
@@ -37,9 +38,11 @@ OrderListToolbar.propTypes = {
   onFilterName: PropTypes.func
 };
 
-export default function OrderListToolbar({ numSelected, filterName, onFilterName }) {
+export default function OrderListToolbar({ numSelected, filterName, onFilterName, packageType, onPackageType }) {
   const theme = useTheme();
   const isLight = theme.palette.mode === 'light';
+  const PackageTypeArr = Object.keys(PackageStatus).map((key) => PackageStatus[key])
+
 
   return (
     <RootStyle
@@ -55,16 +58,34 @@ export default function OrderListToolbar({ numSelected, filterName, onFilterName
           {numSelected} selected
         </Typography>
       ) : (
-        <SearchStyle
-          value={filterName}
-          onChange={onFilterName}
-          placeholder="Search order..."
-          startAdornment={
-            <InputAdornment position="start">
-              <Box component={Icon} icon={searchFill} sx={{ color: 'text.disabled' }} />
-            </InputAdornment>
-          }
-        />
+        <>
+          <SearchStyle
+            value={filterName}
+            onChange={onFilterName}
+            placeholder="Search order..."
+            startAdornment={
+              <InputAdornment position="start">
+                <Box component={Icon} icon={searchFill} sx={{ color: 'text.disabled' }} />
+              </InputAdornment>
+            }
+          />
+          {/* <Select
+            labelId="demo-simple-select-label"
+            id="demo-simple-select"
+            value={packageType}
+            label="Type"
+            onChange={onPackageType}
+          >
+            <MenuItem value="" selected>
+              All
+            </MenuItem>
+            {PackageTypeArr.map((type, index) => {
+              return <MenuItem value={type} key={index}>{type}</MenuItem>
+            })}
+          </Select> */}
+
+        </>
+
       )}
 
       {numSelected > 0 ? (

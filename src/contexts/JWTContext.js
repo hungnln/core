@@ -5,11 +5,12 @@ import axios from '../utils/axios';
 import { isValidToken, setSession } from '../utils/jwt';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
-import { firebaseConfig } from 'src/config';
+import { firebaseConfig, userRole } from 'src/config';
 import { MIconButton } from 'src/components/@material-extend';
 import { Icon } from '@mui/material';
 import closeFill from '@iconify/icons-eva/close-fill';
 import { useSnackbar } from 'notistack';
+import user from 'src/redux/slices/user';
 // ----------------------------------------------------------------------
 
 const initialState = {
@@ -72,7 +73,6 @@ AuthProvider.propTypes = {
 
 function AuthProvider({ children }) {
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
-  // const [demo, setDemo] = useState();
   const [state, dispatch] = useReducer(reducer, initialState);
 
 
@@ -122,50 +122,66 @@ function AuthProvider({ children }) {
       try {
         const accessToken = window.localStorage.getItem('accessToken');
         console.log("check admin token", accessToken);
-        const firebaseToken = localStorage.getItem('firebaseToken')
+        const firebaseToken = localStorage.getItem('firebaseToken');
 
         if (accessToken && isValidToken(accessToken)) {
           setSession(accessToken);
           const x = JSON.parse(atob(accessToken.split('.')[1]))
-          console.log("check admin token", x);
-          if (x?.role === "Admin") {
+          const type = x.role === userRole.admin ? 'admin' : 'shops'
+          if (type === 'admin') {
+            dispatch({
+              type: 'INITIALIZE',
+              // xai tam
+              payload: { isAuthenticated: true, user: { role: userRole.admin, displayName: 'Admin', id: x.id, email: x.email, photoURL: '' } }
+
+
+              // payload: { isAuthenticated: true, user: { id: account.id, displayName: account.name, email: account.email, role: 'User', photoURL: account.imageURL }, isInitialized: true }
+            })
+          } else {
+            const response = await axios.get(`/api/v1.0/${type}/${x.id}`);
+            console.log('check respone', response);
+            const account = response.data.data;
             dispatch({
               type: 'INITIALIZE',
               payload: {
-                isAuthenticated: true,
-                user: { role: 'Admin', displayName: 'Admin' }
-              }
-            });
-          }
-          else {
-            console.log('check  firebase');
-            // const response = await axios.get('/api/account/my-account');
-            // const { user } = response.data;
-            // const respone = await axios.post(`/api/login/firebase`, { headers: { Authorization: `Baerer ${firebaseToken}` } })
-            const account = x;
-            console.log(account, 'account');
-            if (account) {
-              dispatch({
-                type: 'INITIALIZE',
-                // xai tam
-                payload: { isAuthenticated: true, user: { role: 'Admin', displayName: 'Admin' } }
-
-
-                // payload: { isAuthenticated: true, user: { id: account.id, displayName: account.name, email: account.email, role: 'User', photoURL: account.imageURL }, isInitialized: true }
-              })
-            } else {
-              localStorage.removeItem('firebaseToken')
-              dispatch({
-                type: 'INITIALIZE',
-                payload: {
-                  isAuthenticated: false,
-                  user: null
+                isAuthenticated: true, user: {
+                  id: account.id, displayName: account.displayName, email: account.email, role: x.role, photoURL: account.photoUrl,
                 }
-              });
-            }
+              }
 
+            })
           }
+
         }
+        //   else {
+        //     console.log('check  firebase');
+        //     // const response = await axios.get('/api/account/my-account');
+        //     // const { user } = response.data;
+        //     // const respone = await axios.post(`/api/login/firebase`, { headers: { Authorization: `Baerer ${firebaseToken}` } })
+        //     const account = x;
+        //     console.log(account, 'account');
+        //     if (account) {
+        //       dispatch({
+        //         type: 'INITIALIZE',
+        //         // xai tam
+        //         payload: { isAuthenticated: true, user: { role: 'Shop', displayName: 'Shop' } }
+
+
+        //         // payload: { isAuthenticated: true, user: { id: account.id, displayName: account.name, email: account.email, role: 'User', photoURL: account.imageURL }, isInitialized: true }
+        //       })
+        //     } else {
+        //       localStorage.removeItem('firebaseToken')
+        //       dispatch({
+        //         type: 'INITIALIZE',
+        //         payload: {
+        //           isAuthenticated: false,
+        //           user: null
+        //         }
+        //       });
+        //     }
+
+        //   }
+        // }
 
         // const response = await axios.post('/api/login/admin');
 
@@ -220,48 +236,51 @@ function AuthProvider({ children }) {
       }
     })
   };
-  const login = async (userName, password, isAdmin) => {
-    const response = await axios.post(`/api/v1.0/authorizes?isShop=${!isAdmin}&isAdmin=${isAdmin}&isShipper=false`, {
-      userName,
-      password
-    });
-    console.log(response, 'test api');
-    enqueueSnackbar('Login success', {
-      variant: 'success',
-      action: (key) => (
-        <MIconButton size="small" onClick={() => closeSnackbar(key)}>
-          <Icon icon={closeFill} />
-        </MIconButton>
-      )
-    });
-    const { token, user } = response.data.data;
+  const login = async (userName, password, isAdmin, callback) => {
+    try {
+      const response = await axios.post(`/api/v1.0/authorizes?isShop=${!isAdmin}&isAdmin=${isAdmin}&isShipper=false`, {
+        userName,
+        password
+      });
+      console.log('mess', response)
+      console.log(response, 'test api');
+      enqueueSnackbar('Login success', {
+        variant: 'success',
+        action: (key) => (
+          <MIconButton size="small" onClick={() => closeSnackbar(key)}>
+            <Icon icon={closeFill} />
+          </MIconButton>
+        )
+      });
+      const { token, admin, shop } = response.data.data;
+      const account = admin || shop;
+      setSession(token);
+      dispatch({
+        type: 'LOGIN',
+        payload: { user: { id: account.id, displayName: account.displayName, email: account.email, role: isAdmin ? userRole.admin : userRole.shop, photoURL: account.imageURL } }
 
-    setSession(token);
-    dispatch({
-      type: 'LOGIN',
-      payload: {
-        // user
-        user: isAdmin ? { role: 'Admin', displayName: 'Admin' } : { role: 'Shop', displayName: 'Shop' }
-      }
-    });
+      });
+    } catch (error) {
+      callback(error.response.data.message)
+
+    }
   };
 
-  const register = async (email, password, firstName, lastName) => {
-    const response = await axios.post('/api/account/register', {
-      email,
-      password,
-      firstName,
-      lastName
-    });
-    const { accessToken, user } = response.data;
-
-    window.localStorage.setItem('accessToken', accessToken);
-    dispatch({
-      type: 'REGISTER',
-      payload: {
-        user
-      }
-    });
+  const register = async (values, callback) => {
+    try {
+      const response = await axios.post('/api/v1.0/shops/register', values);
+      // const { accessToken, user } = response.data;
+      callback(response.data)
+      // window.localStorage.setItem('accessToken', accessToken);
+    } catch (error) {
+      callback(error.response.data)
+    }
+    // dispatch({
+    //   type: 'REGISTER',
+    //   payload: {
+    //     user
+    //   }
+    // });
   };
 
   // const logout = async () => {

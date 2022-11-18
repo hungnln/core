@@ -8,6 +8,26 @@ export const firebaseConfig = {
   appId: process.env.REACT_APP_FIREBASE_APPID,
   measurementId: process.env.REACT_APP_FIREBASE_MEASUREMENT_ID
 };
+export const PackageStatus = {
+  waiting: 'WAITING',
+  approved: 'APPROVED',
+  reject: 'REJECT',
+  shipperPickup: 'SHIPPER_PICKUP',
+  shipperCancel: 'SHIPPER_CANCEL',
+  delivery: 'DELIVERY',
+  delivered: 'DELIVERED',
+  deliveryFailed: 'DELIVERY_FAILED',
+  shopConfirmDelivered: 'SHOP_CONFIRM_DELIVERED',
+  refundSuccess: 'REFUND_SUCCESS',
+  refundFailed: 'REFUND_FAILED',
+  notExist: 'NOT_EXIST',
+}
+export const userRole = {
+  admin: 'ADMIN',
+  shipper: 'SHIPPER',
+  shop: 'SHOP'
+}
+export const defaultId = '00000000-0000-0000-0000-000000000000'
 
 export const cognitoConfig = {
   userPoolId: process.env.REACT_APP_AWS_COGNITO_USER_POOL_ID,

@@ -50,7 +50,6 @@ import { AuthProvider } from './contexts/JWTContext';
 // import { AuthProvider } from './contexts/FirebaseContext';
 // import { AuthProvider } from './contexts/AwsCognitoContext';
 // import { AuthProvider } from './contexts/Auth0Context';
-
 import { SnackbarProvider, useSnackbar } from 'notistack'
 //
 import App from './App';
@@ -78,7 +77,8 @@ ReactDOM.render(
         </PersistGate>
       </ReduxProvider>
     </HelmetProvider>
-  </SnackbarProvider>,
+  </SnackbarProvider>
+  ,
   document.getElementById('root')
 );
 

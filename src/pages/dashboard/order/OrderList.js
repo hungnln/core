@@ -1,6 +1,6 @@
 import { filter } from 'lodash';
 import { Icon } from '@iconify/react';
-import { sentenceCase } from 'change-case';
+import { capitalCase, sentenceCase } from 'change-case';
 import { useState, useEffect } from 'react';
 import plusFill from '@iconify/icons-eva/plus-fill';
 import { Link as RouterLink } from 'react-router-dom';
@@ -50,7 +50,7 @@ import { fCurrency } from 'src/utils/formatNumber';
 // ----------------------------------------------------------------------
 
 const TABLE_HEAD = [
-    { id: 'receiver', label: 'receiver', alignRight: false },
+    { id: 'receiver', label: 'Receiver', alignRight: false },
     { id: 'createAt', label: 'Created At', alignRight: false },
     { id: 'shipper', label: 'Shipper', alignRight: false },
     { id: 'priceShip', label: 'Price Ship', alignRight: false },
@@ -84,15 +84,21 @@ function getComparator(order, orderBy) {
         : (a, b) => -descendingComparator(a, b, orderBy);
 }
 
-function applySortFilter(array, comparator, query) {
+function applySortFilter(array, comparator, query, type) {
     const stabilizedThis = array.map((el, index) => [el, index]);
     stabilizedThis.sort((a, b) => {
         const order = comparator(a[0], b[0]);
         if (order !== 0) return order;
         return a[1] - b[1];
     });
+    if (query && type) {
+        return filter(array, (_order) => _order.id.toLowerCase().indexOf(query.toLowerCase()) !== -1 && _order.type.toLowerCase() === type.toLowerCase());
+    }
+    if (type) {
+        return filter(array, (_order) => _order.status.toLowerCase() === type.toLowerCase())
+    }
     if (query) {
-        return filter(array, (_order) => _order.id.toLowerCase().indexOf(query.toLowerCase()) !== -1);
+        return filter(array, (_order) => _order.id.toLowerCase().indexOf(query.toLowerCase()) !== -1)
     }
     return stabilizedThis.map((el) => el[0]);
 }
@@ -109,8 +115,18 @@ export default function OrderList() {
     const [filterName, setFilterName] = useState('');
     const [rowsPerPage, setRowsPerPage] = useState(5);
     const { user } = useAuth();
+    const PackageTypeArr = Object.keys(PackageStatus).map((key) => PackageStatus[key])
+    const [packageType, setPackageType] = useState('');
     const isAdmin = user.role === userRole.admin
+    const packageTypes = [];
 
+    orderList.forEach(element => {
+
+        if (!packageTypes.includes(element.status)) {
+            packageTypes.push(element.status)
+        }
+    });
+    console.log(packageTypes);
     useEffect(() => {
         if (isAdmin) {
             dispatch(getOrderListByAdmin())
@@ -161,6 +177,9 @@ export default function OrderList() {
     const handleFilterByName = (event) => {
         setFilterName(event.target.value);
     };
+    const handleChangeFilterByType = (event, newValue) => {
+        setPackageType(newValue);
+    }
 
     const handleDeleteOrder = (orderId) => {
         dispatch(deleteOrder(orderId));
@@ -168,7 +187,7 @@ export default function OrderList() {
 
     const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - orderList.length) : 0;
 
-    const filteredOrders = applySortFilter(orderList, getComparator(order, orderBy), filterName);
+    const filteredOrders = applySortFilter(orderList, getComparator(order, orderBy), filterName, packageType);
 
     const isOrderNotFound = filteredOrders.length === 0;
 
@@ -206,28 +225,40 @@ export default function OrderList() {
 
                 <Card>
                     <Tabs
-                        value={value}
-                        onChange={handleChange}
+                        value={packageType}
+                        onChange={handleChangeFilterByType}
                         textColor="secondary"
+                        scrollButtons="auto"
+                        variant="scrollable"
+                        allowScrollButtonsMobile
                         indicatorColor="secondary"
                         sx={{ px: 2 }}
                     >
-                        <Tab value="one" icon={<Label sx={{ mr: 1 }}
+                        <Tab value="" icon={<Label sx={{ mr: 1 }}
                             variant={theme.palette.mode === 'light' ? 'ghost' : 'filled'}
                             color='success'
                         >
                             {sentenceCase('20')}
                         </Label>} label='All'
                         />
-                        <Tab value="two" icon={<Label sx={{ mr: 1 }}
-                            variant={theme.palette.mode === 'light' ? 'ghost' : 'filled'}
-                            color='error'
-                        >
-                            {sentenceCase('19')}
-                        </Label>} label='Fail'
-                        />
+                        {packageTypes.map((type, index) => {
+                            return <Tab value={type}
+                                icon={<Label sx={{ mr: 1 }}
+                                    variant={theme.palette.mode === 'light' ? 'ghost' : 'filled'}
+                                    // color='success'
+                                    color={(type === PackageStatus.deliveryFailed || type === PackageStatus.reject && 'error') || (type === PackageStatus.waiting && 'warning') || 'success'}
+
+
+                                >
+                                    {sentenceCase('20')}
+                                </Label>}
+                                label={capitalCase(type)}
+                            />
+                        })}
+
+
                     </Tabs>
-                    <OrderListToolbar numSelected={selected.length} filterName={filterName} onFilterName={handleFilterByName} />
+                    <OrderListToolbar numSelected={selected.length} filterName={filterName} onFilterName={handleFilterByName} packageType={packageType} onPackageType={handleChangeFilterByType} />
 
                     <Scrollbar>
                         <TableContainer sx={{ minWidth: 800 }}>
@@ -281,7 +312,7 @@ export default function OrderList() {
                                                                     {receiverName}
                                                                 </Typography>
                                                                 <Typography variant="body2" noWrap sx={{ color: 'text.secondary' }}>
-                                                                    {destinationAddress}
+                                                                    {destinationAddress} {receiverPhone}
                                                                 </Typography>
                                                             </Stack>
                                                         </Stack>

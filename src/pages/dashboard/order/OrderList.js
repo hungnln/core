@@ -128,11 +128,15 @@ export default function OrderList() {
     });
     console.log(packageTypes);
     useEffect(() => {
-        if (isAdmin) {
-            dispatch(getOrderListByAdmin())
-        } else {
-            dispatch(getOrderListByShopId(user.id));
-        }
+        const getOrderList = setInterval(() => {
+            if (isAdmin) {
+                dispatch(getOrderListByAdmin())
+            } else {
+                dispatch(getOrderListByShopId(user.id));
+            }
+        }, 5000)
+        return () => clearTimeout(getOrderList);
+
     }, [dispatch]);
 
     const handleRequestSort = (event, property) => {
@@ -195,9 +199,6 @@ export default function OrderList() {
     const handleChange = (event, newValue) => {
         setValue(newValue);
     };
-    const packageStatusColor = {
-
-    }
 
     return (
         <Page title="Order: List | Minimal-UI">
@@ -238,21 +239,21 @@ export default function OrderList() {
                             variant={theme.palette.mode === 'light' ? 'ghost' : 'filled'}
                             color='success'
                         >
-                            {sentenceCase('20')}
+                            {sentenceCase(orderList.length.toString())}
                         </Label>} label='All'
                         />
-                        {packageTypes.map((type, index) => {
-                            return <Tab value={type}
+                        {packageTypes.map((status, index) => {
+                            return <Tab value={status}
                                 icon={<Label sx={{ mr: 1 }}
                                     variant={theme.palette.mode === 'light' ? 'ghost' : 'filled'}
                                     // color='success'
-                                    color={(type === PackageStatus.deliveryFailed || type === PackageStatus.reject && 'error') || (type === PackageStatus.waiting && 'warning') || 'success'}
+                                    color={((status === PackageStatus.deliveryFailed || status === PackageStatus.reject || status === PackageStatus.shopCancel || status === PackageStatus.shipperCancel) && 'error') || (status === PackageStatus.waiting && 'warning') || 'success'}
 
 
                                 >
-                                    {sentenceCase('20')}
+                                    {sentenceCase(orderList.filter(order => order.status === status).length.toString())}
                                 </Label>}
-                                label={capitalCase(type)}
+                                label={capitalCase(status)}
                             />
                         })}
 
@@ -318,7 +319,7 @@ export default function OrderList() {
                                                         </Stack>
                                                     </TableCell>
                                                 )}
-                                                <TableCell align="left">{moment(createdAt).format('DD-MM-YYYY HH:mm')}</TableCell>
+                                                <TableCell align="left">{moment.utc(createdAt).utcOffset(7).format('DD-MM-YYYY HH:mm')}</TableCell>
                                                 <TableCell align="left">{shipper && (
                                                     <Stack direction="column" spacing={1}>
                                                         <Typography variant="subtitle2" noWrap>
@@ -335,7 +336,7 @@ export default function OrderList() {
                                                 <TableCell align="left">
                                                     <Label
                                                         variant={theme.palette.mode === 'light' ? 'ghost' : 'filled'}
-                                                        color={(status === PackageStatus.deliveryFailed || status === PackageStatus.reject && 'error') || (status === PackageStatus.waiting && 'warning') || 'success'}
+                                                        color={((status === PackageStatus.deliveryFailed || status === PackageStatus.reject || status === PackageStatus.shopCancel || status === PackageStatus.shipperCancel) && 'error') || (status === PackageStatus.waiting && 'warning') || 'success'}
                                                     >
                                                         {sentenceCase(status)}
                                                     </Label>

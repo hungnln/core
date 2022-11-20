@@ -1,5 +1,5 @@
 import * as Yup from 'yup';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Icon } from '@iconify/react';
 import { useSnackbar } from 'notistack';
 import { useFormik, Form, FormikProvider } from 'formik';
@@ -7,7 +7,7 @@ import eyeFill from '@iconify/icons-eva/eye-fill';
 import closeFill from '@iconify/icons-eva/close-fill';
 import eyeOffFill from '@iconify/icons-eva/eye-off-fill';
 // material
-import { Stack, TextField, IconButton, InputAdornment, Alert, Typography } from '@mui/material';
+import { Stack, TextField, IconButton, InputAdornment, Alert, Typography, Autocomplete } from '@mui/material';
 import { LoadingButton } from '@mui/lab';
 // hooks
 import useAuth from '../../../hooks/useAuth';
@@ -18,7 +18,11 @@ import Mapbox from 'src/components/_dashboard/map/Map';
 import { values } from 'lodash';
 import { PATH_AUTH, PATH_DASHBOARD } from 'src/routes/paths';
 import { Navigate, useNavigate } from 'react-router';
-
+import GooglePlacesAutocomplete from 'react-google-places-autocomplete';
+import { GOOGLE_MAPS_API_KEY } from 'src/config';
+import parse from 'autosuggest-highlight/parse';
+import throttle from 'lodash/throttle';
+import GoogleMaps from 'src/components/_dashboard/map/GoogleMaps';
 // ----------------------------------------------------------------------
 
 export default function RegisterForm() {
@@ -162,6 +166,7 @@ export default function RegisterForm() {
             error={Boolean(touched.address && errors.address)}
             helperText={touched.address && errors.address}
           />
+          <GoogleMaps />
 
           {Boolean(touched.address) && (
             <Mapbox onChangeLocation={handleChangeLocation} />
@@ -171,6 +176,7 @@ export default function RegisterForm() {
             <Typography variant='caption' sx={{ color: 'error.main' }}>Please pick a destination</Typography>
 
           )}
+
           <LoadingButton fullWidth size="large" type="submit" variant="contained" loading={isSubmitting}>
             Register
           </LoadingButton>

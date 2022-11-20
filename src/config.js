@@ -21,6 +21,7 @@ export const PackageStatus = {
   refundSuccess: 'REFUND_SUCCESS',
   refundFailed: 'REFUND_FAILED',
   notExist: 'NOT_EXIST',
+  shopCancel: 'SHOP_CANCEL'
 }
 export const userRole = {
   admin: 'ADMIN',
@@ -28,6 +29,7 @@ export const userRole = {
   shop: 'SHOP'
 }
 export const defaultId = '00000000-0000-0000-0000-000000000000'
+export const GOOGLE_MAPS_API_KEY = 'AIzaSyDyiGQYQgykVRVpeqCWXtqn5l4At9vGp04'
 
 export const cognitoConfig = {
   userPoolId: process.env.REACT_APP_AWS_COGNITO_USER_POOL_ID,

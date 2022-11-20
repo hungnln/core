@@ -3,6 +3,7 @@ import { createSlice } from '@reduxjs/toolkit';
 // utils
 import axios from '../../utils/axios';
 import { async } from '@firebase/util';
+import { PackageStatus } from 'src/config';
 
 // ----------------------------------------------------------------------
 
@@ -49,12 +50,18 @@ const slice = createSlice({
             const newOrderList = [...state.orderList, action.payload];
             state.orderList = newOrderList;
         },
-        changePackagesStatus(state, action) {
+        changeCurrentPackageStatus(state, action) {
             state.isLoading = false;
             state.error = false;
             const newPackageStatus = action.payload;
-            state.currentOrder = [...state.currentOrder, ...newPackageStatus]
-
+            state.currentOrder = { ...state.currentOrder, status: newPackageStatus }
+            const newPackageList = state.orderList.map(order => {
+                if (order.id === state.currentOrder.id) {
+                    return { ...order, status: newPackageStatus }
+                }
+                return order
+            })
+            state.orderList = newPackageList
         }
 
 
@@ -139,6 +146,7 @@ export function approvedPackages(id, callback) {
         try {
             const response = await axios.put(`/api/v1.0/packages/approve?packageId=${id}`);
             callback({ response: response.data })
+            dispatch(slice.actions.changeCurrentPackageStatus(PackageStatus.approved))
         } catch (error) {
             callback(error.response.data)
             dispatch(slice.actions.hasError(error));
@@ -151,6 +159,8 @@ export function rejectPackages(id, callback) {
         try {
             const response = await axios.put(`/api/v1.0/packages/reject?packageId=${id}`);
             callback({ response: response.data })
+            dispatch(slice.actions.changeCurrentPackageStatus(PackageStatus.reject))
+
         } catch (error) {
             callback(error.response.data)
             dispatch(slice.actions.hasError(error));
@@ -163,6 +173,8 @@ export function confirmDeliverySuccess(id, callback) {
         try {
             const response = await axios.put(`/api/v1.0/packages/shop-confirm-delivery-success?packageId=${id}`);
             callback({ response: response.data })
+            dispatch(slice.actions.changeCurrentPackageStatus(PackageStatus.confirmDeliverySuccess))
+
         } catch (error) {
             callback(error.response.data)
             dispatch(slice.actions.hasError(error));
@@ -175,6 +187,8 @@ export function cancelPackage(id, callback) {
         try {
             const response = await axios.put(`/api/v1.0/packages/shop-cancel?packageId=${id}`);
             callback({ response: response.data })
+            dispatch(slice.actions.changeCurrentPackageStatus(PackageStatus.shopCancel))
+
         } catch (error) {
             callback(error.response.data)
             dispatch(slice.actions.hasError(error));

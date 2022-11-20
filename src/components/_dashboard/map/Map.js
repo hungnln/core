@@ -12,16 +12,8 @@ function Mapbox({ currentAddress, onChangeLocation }) {
     const [lat, setLat] = useState(currentAddress?.latitude ||
         10.850226152163437,
     );
-    // const [lng, setLng] = useState(-70.9);
-    // const [lat, setLat] = useState(42.35);
     const [zoom, setZoom] = useState(15);
-    // useEffect(() => {
-    //     if (!map.current) return; // wait for map to initialize
-    //     map.current.on('click', (e) => {
-    //         console.log('click')
-    //         onChangeLocation(e)
-    //     });
-    // });
+    let currentMarker;
     useEffect(() => {
         if (map.current) return; // initialize map only once
         map.current = new mapboxgl.Map({
@@ -38,9 +30,13 @@ function Mapbox({ currentAddress, onChangeLocation }) {
         }
         map.current.on('click', (e) => {
             console.log('e', e);
-            new mapboxgl.Marker({ color: '#63df29', scale: 1.5 })
+            if (currentMarker !== undefined) {
+                currentMarker.remove()
+            }
+            const marker = new mapboxgl.Marker({ color: '#63df29', scale: 1.5 })
                 .setLngLat([e.lngLat.lng, e.lngLat.lat])
                 .addTo(map.current);
+            currentMarker = marker
             onChangeLocation(e)
         });
 

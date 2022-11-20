@@ -78,7 +78,7 @@ export default function Login() {
           <Stack direction="row" alignItems="center" sx={{ mb: 2 }}>
             <Box sx={{ flexGrow: 1 }}>
               <Typography variant="h4" gutterBottom>
-                Sign in to Minimal
+                Sign in to ConventWay
               </Typography>
               <Typography sx={{ color: 'text.secondary' }}>Enter your details below.</Typography>
             </Box>

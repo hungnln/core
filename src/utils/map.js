@@ -15,7 +15,7 @@ function map() {
     });
     return (
         <>
-            <div id="map" >{ }</div>
+            <div id="map" >{ }</div>p
             <pre id="info">{ }</pre>
         </>
     )

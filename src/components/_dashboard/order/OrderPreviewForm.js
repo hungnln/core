@@ -139,7 +139,7 @@ export default function OrderPreviewForm() {
           <Grid item xs={6} mb={5} sx={{ textAlign: 'right' }}>
             <Button onClick={handleCloseModal}
               variant='contained'
-              color={(status === PackageStatus.deliveryFailed || status === PackageStatus.reject && 'error') || (status === PackageStatus.waiting && 'warning') || 'success'}
+              color={(status === PackageStatus.deliveryFailed || status === PackageStatus.reject || status === PackageStatus.shopCancel && 'error') || (status === PackageStatus.waiting && 'warning') || 'success'}
 
               sx={{ mb: 1 }}
             >

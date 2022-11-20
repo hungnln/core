@@ -63,7 +63,7 @@ export default function OrderNewForm({ isEdit, currentOrder }) {
       Yup.object().shape({
         name: Yup.string().required('Product name is required'),
         description: Yup.string().required('Product description is required'),
-        price: Yup.number().required('Product price is required').moreThan(0, 'Price must more than 0')
+        price: Yup.number().required('Product price is required').min(0, 'Price must greater than 0')
       })
     ).required('Must have products')
   });
@@ -249,14 +249,17 @@ export default function OrderNewForm({ isEdit, currentOrder }) {
                         <TextField size='small' label="Description" variant="outlined" value={product.description} onChange={handleChange} name={description}
                           error={Boolean(touched?.products?.[index]?.description && errors?.products?.[index]?.description)}
                           helperText={touched?.products?.[index]?.description && errors?.products?.[index]?.description} />
-                        <TextField size='small' type='number' label="Price" variant="outlined" sx={{ width: '130px' }} value={product.price} name={price} onChange={handleChange}
+                        <TextField size='small' type="number" label="Price" variant="outlined" sx={{ width: '130px' }} value={product.price} name={price} onChange={handleChange}
                           error={Boolean(touched?.products?.[index]?.price && errors?.products?.[index]?.price)}
                           helperText={touched?.products?.[index]?.price && errors?.products?.[index]?.price}
                           InputProps={{
+                            min: "0",
+                            inputMode: 'numeric',
+                            pattern: '[0-9]*',
                             shrink: true,
-                            startAdornment: (
-                              <InputAdornment position="start">
-                                $
+                            endAdornment: (
+                              <InputAdornment position="end">
+                                vnd
                               </InputAdornment>
                             )
                           }} />
@@ -278,7 +281,7 @@ export default function OrderNewForm({ isEdit, currentOrder }) {
                       <Stack direction='column' justifyContent='space-between'>
                         <Stack direction='row' justifyContent='space-between'>
                           <Typography variant='body1' sx={{ color: 'text.secondary' }} >Subtotal: </Typography>
-                          <Typography variant='body1' sx={{ color: 'text.secondary' }} >{fCurrency(values.priceShip || 0)}</Typography>
+                          <Typography variant='body1' sx={{ color: 'text.secondary' }} >{fCurrency(subTotal || 0)}</Typography>
 
                         </Stack >
                         <Stack direction='row' justifyContent='space-between' sx={{ mt: 0.5, mb: 1 }}>

@@ -8,7 +8,7 @@ import eyeFill from '@iconify/icons-eva/eye-fill';
 import closeFill from '@iconify/icons-eva/close-fill';
 import eyeOffFill from '@iconify/icons-eva/eye-off-fill';
 // material
-import { Link, Stack, Alert, Checkbox, TextField, IconButton, InputAdornment, FormControlLabel } from '@mui/material';
+import { Link, Stack, Alert, Checkbox, TextField, IconButton, InputAdornment, FormControlLabel, Typography, Divider, Box } from '@mui/material';
 import { LoadingButton } from '@mui/lab';
 // routes
 import { PATH_AUTH } from '../../../routes/paths';
@@ -17,15 +17,18 @@ import useAuth from '../../../hooks/useAuth';
 import useIsMountedRef from '../../../hooks/useIsMountedRef';
 //
 import { MIconButton } from '../../@material-extend';
+import Label from 'src/components/Label';
+import { CheckBoxOutlineBlank } from '@mui/icons-material';
+import GooglePlacesAutocomplete from 'react-google-places-autocomplete';
 
 // ----------------------------------------------------------------------
 
-export default function LoginForm() {
+export default function LoginForm({ props }) {
   const { login } = useAuth();
   const isMountedRef = useIsMountedRef();
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
   const [showPassword, setShowPassword] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(props || false);
   const LoginSchema = Yup.object().shape({
     username: Yup.string().required('Username is required'),
     password: Yup.string().required('Password is required')
@@ -57,8 +60,8 @@ export default function LoginForm() {
   });
 
   const { errors, touched, values, isSubmitting, handleSubmit, getFieldProps } = formik;
-  const changeType = (type) => {
-    setIsAdmin(type)
+  const changeType = () => {
+    setIsAdmin(!isAdmin)
   }
   const handleShowPassword = () => {
     setShowPassword((show) => !show);
@@ -67,24 +70,21 @@ export default function LoginForm() {
   return (
     <FormikProvider value={formik}>
       <Form autoComplete="off" noValidate onSubmit={handleSubmit}>
-        {isAdmin && (
-          <Stack >
-            <Link component='span' variant="subtitle2" sx={{ my: 2 }} onClick={() => changeType(false)}>
-              Login with Admin
-            </Link>
-          </Stack>
-        )}
-        {!isAdmin && (
-          <Stack >
-            <Link component='span' variant="subtitle2" sx={{ my: 2 }} onClick={() => changeType(true)}>
-              Login with Shop
-            </Link>
-          </Stack>
-        )}
+        <Typography variant='h5' sx={{ color: 'text.primary', textAlign: 'center;' }}>{`Login as a ${isAdmin ? 'Admin' : 'Shop'} user`}</Typography>
+
+        <Divider sx={{ my: 1 }}>
+          <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+            OR
+          </Typography>
+        </Divider>
+        <Box sx={{ mt: 1, mb: 3, textAlign: 'center' }}>
+          <Link component='span' variant="subtitle2" sx={{ my: 2 }} onClick={() => changeType()}>
+            {`Login with ${!isAdmin ? 'Admin' : 'Shop'} account?`}
+          </Link>
+        </Box>
 
         <Stack spacing={3}>
           {errors.afterSubmit && <Alert severity="error">{errors.afterSubmit}</Alert>}
-
 
 
           <TextField
@@ -127,6 +127,8 @@ export default function LoginForm() {
             Forgot password?
           </Link>
         </Stack>
+        
+
 
         <LoadingButton fullWidth size="large" type="submit" variant="contained" loading={isSubmitting}>
           Login

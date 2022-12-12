@@ -53,6 +53,14 @@ export default function Router() {
           )
         },
         {
+          path: 'login-admin',
+          element: (
+            <GuestGuard>
+              <LoginAdmin />
+            </GuestGuard>
+          )
+        },
+        {
           path: 'register',
           element: (
             <GuestGuard>
@@ -239,6 +247,8 @@ export default function Router() {
 
 // Authentication
 const Login = Loadable(lazy(() => import('../pages/authentication/Login')));
+const LoginAdmin = Loadable(lazy(() => import('../pages/authentication/LoginAdmin')));
+
 const Register = Loadable(lazy(() => import('../pages/authentication/Register')));
 const ResetPassword = Loadable(lazy(() => import('../pages/authentication/ResetPassword')));
 const VerifyCode = Loadable(lazy(() => import('../pages/authentication/VerifyCode')));

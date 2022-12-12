@@ -7,7 +7,7 @@ import eyeFill from '@iconify/icons-eva/eye-fill';
 import closeFill from '@iconify/icons-eva/close-fill';
 import eyeOffFill from '@iconify/icons-eva/eye-off-fill';
 // material
-import { Stack, TextField, IconButton, InputAdornment, Alert, Typography, Autocomplete } from '@mui/material';
+import { Stack, TextField, IconButton, InputAdornment, Alert, Typography, Autocomplete, DialogTitle } from '@mui/material';
 import { LoadingButton } from '@mui/lab';
 // hooks
 import useAuth from '../../../hooks/useAuth';
@@ -23,6 +23,11 @@ import { GOOGLE_MAPS_API_KEY } from 'src/config';
 import parse from 'autosuggest-highlight/parse';
 import throttle from 'lodash/throttle';
 import GoogleMaps from 'src/components/_dashboard/map/GoogleMaps';
+import MuiPhoneNumber from 'material-ui-phone-number';
+import { DialogAnimate } from 'src/components/animate';
+import VerifyCode from 'src/pages/authentication/VerifyCode';
+import { useDispatch } from 'react-redux';
+import { registerUser } from 'src/redux/slices/user';
 // ----------------------------------------------------------------------
 
 export default function RegisterForm() {
@@ -33,18 +38,20 @@ export default function RegisterForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [errorState, setErrorState] = useState();
+  const dispatch = useDispatch();
   const RegisterSchema = Yup.object().shape({
     displayName: Yup.string().min(2, 'Too Short!').max(50, 'Too Long!').required('First name required'),
-    phoneNumber: Yup.string().required('Phone is required'),
-    address: Yup.string().required('Address is required'),
+    phoneNumber: Yup.string().length(12).required('Phone is required'),
+    // address: Yup.string().required('Address is required'),
     email: Yup.string().email('Email must be a valid email address').required('Email is required'),
     password: Yup.string().required('Password is required'),
-    longitude: Yup.number().required('Longlat is required'),
-    latitude: Yup.number().required('Longlat is required'),
+    // longitude: Yup.number().required('Longlat is required'),
+    // latitude: Yup.number().required('Longlat is required'),
     userName: Yup.string().required('User Name is required'),
 
 
   });
+  const [isOpenModal, setOpenModal] = useState(false);
 
   const formik = useFormik({
     initialValues: {
@@ -61,14 +68,17 @@ export default function RegisterForm() {
     validationSchema: RegisterSchema,
     onSubmit: async (values, { setErrors, setSubmitting }) => {
       try {
-        await register(values, error => {
-          setErrors({ afterSubmit: error.message })
-          setErrorState(error)
-          if (error.success) {
-            enqueueSnackbar(error.message, { variant: 'success' });
-            navigate(PATH_AUTH.login)
-          }
-        });
+        sessionStorage.setItem('user_register_information', JSON.stringify(values))
+        // dispatch(registerUser(values))
+        navigate(PATH_AUTH.verify)
+        // await register(values, error => {
+        //   setErrors({ afterSubmit: error.message })
+        //   setErrorState(error)
+        //   if (error.success) {
+        //     enqueueSnackbar(error.message, { variant: 'success' });
+        //     navigate(PATH_AUTH.login)
+        //   }
+        // });
         if (isMountedRef.current) {
           setSubmitting(false);
         }
@@ -82,12 +92,20 @@ export default function RegisterForm() {
     }
   });
   const handleChangeLocation = useCallback((callback) => {
-    const { lng, lat } = callback?.lngLat;
+    const { lng, lat } = callback.geometry.location;
+    const address = callback.formatted_address;
     formik.setFieldValue('longitude', lng);
     formik.setFieldValue('latitude', lat);
+    formik.setFieldValue('address', address);
 
 
   })
+  const handleChangePhoneNumber = (value) => {
+    formik.setFieldValue('phoneNumber', value);
+  }
+  const handleCloseModal = () => {
+    setOpenModal(!isOpenModal)
+  }
 
   const { values, errors, touched, handleSubmit, isSubmitting, getFieldProps, handleChange } = formik;
 
@@ -146,7 +164,7 @@ export default function RegisterForm() {
             error={Boolean(touched.password && errors.password)}
             helperText={touched.password && errors.password}
           />
-          <TextField
+          {/* <TextField
             fullWidth
             autoComplete="phone"
             type=""
@@ -155,8 +173,12 @@ export default function RegisterForm() {
 
             error={Boolean(touched.phoneNumber && errors.phoneNumber)}
             helperText={touched.phoneNumber && errors.phoneNumber}
+          /> */}
+          <MuiPhoneNumber label="Phone Number" {...getFieldProps('phoneNumber')} variant="outlined" defaultCountry='vn' onChange={handleChangePhoneNumber}
+            error={Boolean(touched.phoneNumber && errors.phoneNumber)}
+            helperText={touched.phoneNumber && errors.phoneNumber}
           />
-          <TextField
+          {/* <Autocomplete
             fullWidth
             autoComplete="address"
             label="Address"
@@ -165,21 +187,26 @@ export default function RegisterForm() {
 
             error={Boolean(touched.address && errors.address)}
             helperText={touched.address && errors.address}
-          />
-          <GoogleMaps />
+          /> */}
+          {/* <GoogleMaps onChangeLocation={handleChangeLocation} touched={touched} errors={errors} /> */}
 
-          {Boolean(touched.address) && (
+          {/* {Boolean(touched.address) && (
             <Mapbox onChangeLocation={handleChangeLocation} />
           )
           }
           {Boolean(errors.longitude || errors.latitude) && (
             <Typography variant='caption' sx={{ color: 'error.main' }}>Please pick a destination</Typography>
 
-          )}
+          )} */}
 
-          <LoadingButton fullWidth size="large" type="submit" variant="contained" loading={isSubmitting}>
+          <LoadingButton id='sign-in-button' fullWidth size="large" type="submit" variant="contained" loading={isSubmitting}>
             Register
           </LoadingButton>
+          {/* <DialogAnimate open={isOpenModal} onClose={handleCloseModal}>
+            <DialogTitle>Verify phone number</DialogTitle>
+
+            <VerifyCode onCancel={handleCloseModal} registerAccount={values}/>
+          </DialogAnimate> */}
         </Stack>
       </Form>
     </FormikProvider>

@@ -7,6 +7,7 @@ import { Box, Button, Stack, TextField, Typography } from '@mui/material';
 import { LoadingButton } from '@mui/lab';
 import Mapbox from '../map/Map';
 import { color } from '@mui/system';
+import GoogleMaps from '../map/GoogleMaps';
 
 AddressNewForm.propTypes = {
     isEdit: PropTypes.bool,
@@ -49,9 +50,14 @@ export default function AddressNewForm({ isEdit, currentAddress, onCancel, onCha
         }
     });
     const handleChangeLocation = (callback) => {
-        const { lng, lat } = callback?.lngLat;
-        formik.setFieldValue('destinationLongitude', lng)
-        formik.setFieldValue('destinationLatitude', lat)
+        // const { lng, lat } = callback?.lngLat;
+        // formik.setFieldValue('destinationLongitude', lng)
+        // formik.setFieldValue('destinationLatitude', lat)
+        const { lng, lat } = callback.geometry.location;
+        const address = callback.formatted_address;
+        formik.setFieldValue('destinationLongitude', lng);
+        formik.setFieldValue('destinationLatitude', lat);
+        formik.setFieldValue('destinationAddress', address);
     }
     const { errors, values, touched, handleSubmit, isSubmitting, setFieldValue, getFieldProps, handleChange } = formik;
     return (
@@ -61,9 +67,9 @@ export default function AddressNewForm({ isEdit, currentAddress, onCancel, onCha
                     <TextField label="Customer Name" variant="outlined"  {...getFieldProps('receiverName')}
                         error={Boolean(touched.receiverName && errors.receiverName)}
                         helperText={touched.receiverName && errors.receiverName} />
-                    <TextField label="Address" variant="outlined"  {...getFieldProps('destinationAddress')}
+                    {/* <TextField label="Address" variant="outlined"  {...getFieldProps('destinationAddress')}
                         error={Boolean(touched.destinationAddress && errors.destinationAddress)}
-                        helperText={touched.destinationAddress && errors.destinationAddress} />
+                        helperText={touched.destinationAddress && errors.destinationAddress} /> */}
                     <TextField label="Phone" variant="outlined"  {...getFieldProps('receiverPhone')}
                         error={Boolean(touched.receiverPhone && errors.receiverPhone)}
                         helperText={touched.receiverPhone && errors.receiverPhone} />
@@ -78,11 +84,13 @@ export default function AddressNewForm({ isEdit, currentAddress, onCancel, onCha
                         {...getFieldProps('receiverPhone')}
                         onChange={(event, value) => setFieldValue('receiverPhone', value)}
                     /> */}
-                    <Mapbox currentAddress={{ address: values.destinationAddress, longitude: values.destinationLongitude, latitude: values.destinationLatitude }} onChangeLocation={handleChangeLocation} />
-                    {Boolean(errors.destinationLatitude || errors.destinationLongitude) && (
+                    {/* <Mapbox currentAddress={{ address: values.destinationAddress, longitude: values.destinationLongitude, latitude: values.destinationLatitude }} onChangeLocation={handleChangeLocation} /> */}
+                    {/* {Boolean(errors.destinationLatitude || errors.destinationLongitude) && (
                         <Typography variant='caption' sx={{ color: 'error.main' }}>Please pick a destination</Typography>
 
-                    )}
+                    )} */}
+                    <GoogleMaps currentGeocoding={{ address: values.destinationAddress, longitude: values.destinationLongitude, latitude: values.destinationLatitude }} onChangeLocation={handleChangeLocation} touched={touched} errors={errors} />
+
                     <Stack direction='row' justifyContent="flex-end" spacing={2} sx={{ mt: 3 }}>
                         <Button size='medium' variant="contained" color='inherit' onClick={onCancel}>Close</Button>
                         <LoadingButton type="submit" variant="contained" loading={isSubmitting}>

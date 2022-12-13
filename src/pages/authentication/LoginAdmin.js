@@ -44,7 +44,7 @@ const ContentStyle = styled('div')(({ theme }) => ({
 
 // ----------------------------------------------------------------------
 
-export default function Login() {
+export default function LoginAdmin() {
   const { method, login } = useAuth();
 
   const handleLoginAuth0 = async () => {
@@ -57,12 +57,12 @@ export default function Login() {
 
   return (
     <RootStyle title="Login | Minimal-UI">
-      <AuthLayout>
+      {/* <AuthLayout>
         Don’t have an account? &nbsp;
         <Link underline="none" variant="subtitle2" component={RouterLink} to={PATH_AUTH.register}>
           Get started
         </Link>
-      </AuthLayout>
+      </AuthLayout> */}
 
       <MHidden width="mdDown">
         <SectionStyle>
@@ -80,7 +80,7 @@ export default function Login() {
               <Typography variant="h4" gutterBottom>
                 Sign in to ConventWay
               </Typography>
-              <Typography sx={{ color: 'text.secondary' }}>Enter your details below.</Typography>
+              <Typography sx={{ color: 'error.main' }}>Only for admin.</Typography>
             </Box>
 
             <Tooltip title={capitalCase(method)}>
@@ -89,27 +89,27 @@ export default function Login() {
           </Stack>
 
           {method === 'firebase' && <AuthFirebaseSocials />}
-          <AuthFirebaseSocials />
+          {/* <AuthFirebaseSocials /> */}
           {/* <Alert severity="info" sx={{ mb: 3 }}>
             Use email : <strong>demo@minimals.cc</strong> / password :<strong>&nbsp;demo1234</strong>
           </Alert> */}
 
           {method !== 'auth0' ? (
-            <LoginForm isAdmin='false' />
+            <LoginForm isAdmin />
           ) : (
             <Button fullWidth size="large" type="submit" variant="contained" onClick={handleLoginAuth0}>
               Login
             </Button>
           )}
 
-          <MHidden width="smUp">
+          {/* <MHidden width="smUp">
             <Typography variant="body2" align="center" sx={{ mt: 3 }}>
               Don’t have an account?&nbsp;
               <Link variant="subtitle2" component={RouterLink} to={PATH_AUTH.register}>
                 Get started
               </Link>
             </Typography>
-          </MHidden>
+          </MHidden> */}
         </ContentStyle>
       </Container>
     </RootStyle>

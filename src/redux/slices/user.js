@@ -18,7 +18,8 @@ const initialState = {
   cards: null,
   addressBook: [],
   invoices: [],
-  notifications: null
+  notifications: null,
+  registerUser: null,
 };
 
 const slice = createSlice({
@@ -124,6 +125,12 @@ const slice = createSlice({
       state.isLoading = false;
       state.notifications = action.payload;
     }
+    ,
+
+    registerUser(state, action) {
+      state.isLoading = false;
+      state.registerUser = action.payload
+    }
   }
 });
 
@@ -134,7 +141,16 @@ export default slice.reducer;
 export const { onToggleFollow, deleteUser } = slice.actions;
 
 // ----------------------------------------------------------------------
-
+export function registerUser(values) {
+  return async (dispatch) => {
+    dispatch(slice.actions.startLoading());
+    try {
+      dispatch(slice.actions.registerUser(values));
+    } catch (error) {
+      dispatch(slice.actions.hasError(error));
+    }
+  };
+}
 export function getProfile() {
   return async (dispatch) => {
     dispatch(slice.actions.startLoading());

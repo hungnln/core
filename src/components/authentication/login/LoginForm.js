@@ -23,12 +23,11 @@ import GooglePlacesAutocomplete from 'react-google-places-autocomplete';
 
 // ----------------------------------------------------------------------
 
-export default function LoginForm({ props }) {
+export default function LoginForm({ isAdmin,props }) {
   const { login } = useAuth();
   const isMountedRef = useIsMountedRef();
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
   const [showPassword, setShowPassword] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(props || false);
   const LoginSchema = Yup.object().shape({
     username: Yup.string().required('Username is required'),
     password: Yup.string().required('Password is required')
@@ -60,9 +59,6 @@ export default function LoginForm({ props }) {
   });
 
   const { errors, touched, values, isSubmitting, handleSubmit, getFieldProps } = formik;
-  const changeType = () => {
-    setIsAdmin(!isAdmin)
-  }
   const handleShowPassword = () => {
     setShowPassword((show) => !show);
   };
@@ -70,7 +66,7 @@ export default function LoginForm({ props }) {
   return (
     <FormikProvider value={formik}>
       <Form autoComplete="off" noValidate onSubmit={handleSubmit}>
-        <Typography variant='h5' sx={{ color: 'text.primary', textAlign: 'center;' }}>{`Login as a ${isAdmin ? 'Admin' : 'Shop'} user`}</Typography>
+        {/* <Typography variant='h5' sx={{ color: 'text.primary', textAlign: 'center;' }}>{`Login as a ${isAdmin ? 'Admin' : 'Shop'} user`}</Typography>
 
         <Divider sx={{ my: 1 }}>
           <Typography variant="body2" sx={{ color: 'text.secondary' }}>
@@ -81,7 +77,7 @@ export default function LoginForm({ props }) {
           <Link component='span' variant="subtitle2" sx={{ my: 2 }} onClick={() => changeType()}>
             {`Login with ${!isAdmin ? 'Admin' : 'Shop'} account?`}
           </Link>
-        </Box>
+        </Box> */}
 
         <Stack spacing={3}>
           {errors.afterSubmit && <Alert severity="error">{errors.afterSubmit}</Alert>}
@@ -127,7 +123,7 @@ export default function LoginForm({ props }) {
             Forgot password?
           </Link>
         </Stack>
-        
+
 
 
         <LoadingButton fullWidth size="large" type="submit" variant="contained" loading={isSubmitting}>

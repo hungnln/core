@@ -6,9 +6,16 @@ import { Form, FormikProvider, useFormik } from 'formik';
 import { OutlinedInput, FormHelperText, Stack } from '@mui/material';
 import { LoadingButton } from '@mui/lab';
 // routes
-import { PATH_DASHBOARD } from '../../../routes/paths';
+import { PATH_AUTH, PATH_DASHBOARD } from '../../../routes/paths';
 // utils
 import fakeRequest from '../../../utils/fakeRequest';
+import useAuth from 'src/hooks/useAuth';
+import { useState } from 'react';
+import useIsMountedRef from 'src/hooks/useIsMountedRef';
+
+import { concat } from 'lodash';
+import { useSelector } from 'react-redux';
+import { async } from '@firebase/util';
 
 // ----------------------------------------------------------------------
 
@@ -19,10 +26,14 @@ function maxLength(object) {
   }
 }
 
-export default function VerifyCodeForm() {
+export default function VerifyCodeForm({ onCancel, OTPCode,registerUser }) {
   const navigate = useNavigate();
+  // const { sendSMSOTP } = useAuth()
   const { enqueueSnackbar } = useSnackbar();
-
+  const [errorState, setErrorState] = useState();
+  const { register } = useAuth();
+  const [check, setCheck] = useState(false)
+  const isMountedRef = useIsMountedRef();
   const VerifyCodeSchema = Yup.object().shape({
     code1: Yup.number().required('Code is required'),
     code2: Yup.number().required('Code is required'),
@@ -42,12 +53,47 @@ export default function VerifyCodeForm() {
       code6: ''
     },
     validationSchema: VerifyCodeSchema,
-    onSubmit: async () => {
-      await fakeRequest(500);
-      enqueueSnackbar('Verify success', { variant: 'success' });
-      navigate(PATH_DASHBOARD.root);
+    onSubmit: async (values, { setErrors, setSubmitting }) => {
+      try {
+        const stringOTP = values.code1.toString() + values.code2.toString() + values.code3.toString() + values.code4.toString() + values.code5.toString() + values.code6.toString()
+        validateOTP(stringOTP)  
+      }
+      catch (error) {
+        console.error(error);
+        if (isMountedRef.current) {
+          setErrors({ afterSubmit: error.message });
+          setSubmitting(false);
+        }
+      }
     }
   });
+  const handleRegister = async () => {
+    await register(registerUser, error => {
+      // setErrors({ afterSubmit: error.message })
+      // setErrorState(error)
+      if (error.success) {
+        enqueueSnackbar(error.message, { variant: 'success' });
+        navigate(PATH_AUTH.login)
+      } else {
+        enqueueSnackbar(error.message, { variant: 'error' });
+        navigate(PATH_AUTH.register)
+
+      }
+    });
+  }
+  const validateOTP = (otp) => {
+    if (otp === null) return;
+    OTPCode.confirm(otp).then((result) => {
+      setCheck(true)
+      console.log('otp true');
+      handleRegister()
+      sessionStorage.removeItem('user_register_information')
+    })
+      .catch((err) => {
+        setCheck(false)
+        enqueueSnackbar('Incorect code', { variant: 'error' });
+      })
+  }
 
   const { values, errors, isValid, touched, isSubmitting, handleSubmit, getFieldProps } = formik;
 

@@ -42,11 +42,11 @@ export default function RegisterForm() {
   const RegisterSchema = Yup.object().shape({
     displayName: Yup.string().min(2, 'Too Short!').max(50, 'Too Long!').required('First name required'),
     phoneNumber: Yup.string().length(12).required('Phone is required'),
-    // address: Yup.string().required('Address is required'),
+    address: Yup.string().required('Address is required'),
     email: Yup.string().email('Email must be a valid email address').required('Email is required'),
     password: Yup.string().required('Password is required'),
-    // longitude: Yup.number().required('Longlat is required'),
-    // latitude: Yup.number().required('Longlat is required'),
+    longitude: Yup.number().required('Longlat is required'),
+    latitude: Yup.number().required('Longlat is required'),
     userName: Yup.string().required('User Name is required'),
 
 
@@ -188,7 +188,7 @@ export default function RegisterForm() {
             error={Boolean(touched.address && errors.address)}
             helperText={touched.address && errors.address}
           /> */}
-          {/* <GoogleMaps onChangeLocation={handleChangeLocation} touched={touched} errors={errors} /> */}
+          <GoogleMaps onChangeLocation={handleChangeLocation} touched={touched} errors={errors} />
 
           {/* {Boolean(touched.address) && (
             <Mapbox onChangeLocation={handleChangeLocation} />
@@ -202,11 +202,6 @@ export default function RegisterForm() {
           <LoadingButton id='sign-in-button' fullWidth size="large" type="submit" variant="contained" loading={isSubmitting}>
             Register
           </LoadingButton>
-          {/* <DialogAnimate open={isOpenModal} onClose={handleCloseModal}>
-            <DialogTitle>Verify phone number</DialogTitle>
-
-            <VerifyCode onCancel={handleCloseModal} registerAccount={values}/>
-          </DialogAnimate> */}
         </Stack>
       </Form>
     </FormikProvider>

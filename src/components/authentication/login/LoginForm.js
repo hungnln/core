@@ -28,22 +28,21 @@ export default function LoginForm({ props }) {
   const isMountedRef = useIsMountedRef();
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
   const [showPassword, setShowPassword] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(props || false);
   const LoginSchema = Yup.object().shape({
-    username: Yup.string().required('Username is required'),
+    userName: Yup.string().required('userName is required'),
     password: Yup.string().required('Password is required')
   });
 
   const formik = useFormik({
     initialValues: {
-      username: '',
+      userName: '',
       password: '',
       remember: true
     },
     validationSchema: LoginSchema,
     onSubmit: async (values, { setErrors, setSubmitting, resetForm }) => {
       try {
-        await login(values.username, values.password, isAdmin, message => setErrors({ afterSubmit: message }));
+        await login(values.userName, values.password, message => setErrors({ afterSubmit: message }));
 
         if (isMountedRef.current) {
           setSubmitting(false);
@@ -60,9 +59,6 @@ export default function LoginForm({ props }) {
   });
 
   const { errors, touched, values, isSubmitting, handleSubmit, getFieldProps } = formik;
-  const changeType = () => {
-    setIsAdmin(!isAdmin)
-  }
   const handleShowPassword = () => {
     setShowPassword((show) => !show);
   };
@@ -70,7 +66,7 @@ export default function LoginForm({ props }) {
   return (
     <FormikProvider value={formik}>
       <Form autoComplete="off" noValidate onSubmit={handleSubmit}>
-        <Typography variant='h5' sx={{ color: 'text.primary', textAlign: 'center;' }}>{`Login as a ${isAdmin ? 'Admin' : 'Shop'} user`}</Typography>
+        {/* <Typography variant='h5' sx={{ color: 'text.primary', textAlign: 'center;' }}>{`Login as a ${isAdmin ? 'Admin' : 'Shop'} user`}</Typography>
 
         <Divider sx={{ my: 1 }}>
           <Typography variant="body2" sx={{ color: 'text.secondary' }}>
@@ -81,7 +77,7 @@ export default function LoginForm({ props }) {
           <Link component='span' variant="subtitle2" sx={{ my: 2 }} onClick={() => changeType()}>
             {`Login with ${!isAdmin ? 'Admin' : 'Shop'} account?`}
           </Link>
-        </Box>
+        </Box> */}
 
         <Stack spacing={3}>
           {errors.afterSubmit && <Alert severity="error">{errors.afterSubmit}</Alert>}
@@ -89,12 +85,12 @@ export default function LoginForm({ props }) {
 
           <TextField
             fullWidth
-            autoComplete="username"
+            autoComplete="userName"
             type="text"
-            label="Username"
-            {...getFieldProps('username')}
-            error={Boolean(touched.username && errors.username)}
-            helperText={touched.username && errors.username}
+            label="userName"
+            {...getFieldProps('userName')}
+            error={Boolean(touched.userName && errors.userName)}
+            helperText={touched.userName && errors.userName}
           />
 
           <TextField
@@ -117,17 +113,17 @@ export default function LoginForm({ props }) {
           />
         </Stack>
 
-        <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ my: 2 }}>
-          <FormControlLabel
+        <Stack direction="row" alignItems="center" justifyContent="flex-end" sx={{ my: 2 }}>
+          {/* <FormControlLabel
             control={<Checkbox {...getFieldProps('remember')} checked={values.remember} />}
             label="Remember me"
-          />
+          /> */}
 
           <Link component={RouterLink} variant="subtitle2" to={PATH_AUTH.resetPassword}>
             Forgot password?
           </Link>
         </Stack>
-        
+
 
 
         <LoadingButton fullWidth size="large" type="submit" variant="contained" loading={isSubmitting}>

@@ -23,15 +23,13 @@ const RootStyle = styled(Page)(({ theme }) => ({
   }
 }));
 
-const SectionStyle = styled(Box)(({ theme }) => ({
+const SectionStyle = styled(Card)(({ theme }) => ({
   width: '100%',
+  maxWidth: 464,
   display: 'flex',
   flexDirection: 'column',
   justifyContent: 'center',
-  alignItems: 'center',
-  margin: theme.spacing(0),
-  position: 'relative',
-  flexGrow: 1
+  margin: theme.spacing(2, 0, 2, 2)
 }));
 
 const ContentStyle = styled('div')(({ theme }) => ({
@@ -46,7 +44,7 @@ const ContentStyle = styled('div')(({ theme }) => ({
 
 // ----------------------------------------------------------------------
 
-export default function Login() {
+export default function LoginAdmin() {
   const { method, login } = useAuth();
 
   const handleLoginAuth0 = async () => {
@@ -59,33 +57,19 @@ export default function Login() {
 
   return (
     <RootStyle title="Login | Minimal-UI">
-      <AuthLayout>
-        {/* Don’t have an account? &nbsp;
+      {/* <AuthLayout>
+        Don’t have an account? &nbsp;
         <Link underline="none" variant="subtitle2" component={RouterLink} to={PATH_AUTH.register}>
           Get started
-        </Link> */}
-      </AuthLayout>
+        </Link>
+      </AuthLayout> */}
 
       <MHidden width="mdDown">
         <SectionStyle>
-          <Typography variant="h3" textAlign='center' sx={{ px: 5, mt: 10, mb: 5 }}>
+          <Typography variant="h3" sx={{ px: 5, mt: 10, mb: 5 }}>
             Hi, Welcome Back
           </Typography>
-          <Box sx={{ maxWidth: 720 }}>
-            <img src="/static/illustrations/illustration_login.png" alt="login" style={{ objectFit: 'cover' }} />
-          </Box>
-          <Box sx={{
-            top: 0,
-            left: 0,
-            zIndex: -1,
-            width: '100%',
-            height: '100%',
-            position: 'absolute',
-            transform: 'scaleX(-1)',
-            background: 'linear-gradient(rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.9)) center center / cover no-repeat, url(/static/background/overlay_2.jpg)',
-            backgroundRepeat: 'no-repeat',
-            backgroundPosition: 'center center',
-          }} />
+          <img src="/static/illustrations/illustration_login.png" alt="login" />
         </SectionStyle>
       </MHidden>
 
@@ -94,13 +78,9 @@ export default function Login() {
           <Stack direction="row" alignItems="center" sx={{ mb: 2 }}>
             <Box sx={{ flexGrow: 1 }}>
               <Typography variant="h4" gutterBottom>
-                Sign in to Convenient Way
+                Sign in to ConventWay
               </Typography>
-              <Typography variant='body2' sx={{ color: 'text.secondary', mt: 2, mb: 5 }}>  New user? &nbsp;
-                <Link underline="none" variant="subtitle2" component={RouterLink} to={PATH_AUTH.register}>
-                  Create an account
-                </Link></Typography>
-
+              <Typography sx={{ color: 'error.main' }}>Only for admin.</Typography>
             </Box>
 
             <Tooltip title={capitalCase(method)}>
@@ -109,27 +89,27 @@ export default function Login() {
           </Stack>
 
           {method === 'firebase' && <AuthFirebaseSocials />}
+          {/* <AuthFirebaseSocials /> */}
           {/* <Alert severity="info" sx={{ mb: 3 }}>
             Use email : <strong>demo@minimals.cc</strong> / password :<strong>&nbsp;demo1234</strong>
           </Alert> */}
 
           {method !== 'auth0' ? (
-            <LoginForm isAdmin='false' />
+            <LoginForm isAdmin />
           ) : (
             <Button fullWidth size="large" type="submit" variant="contained" onClick={handleLoginAuth0}>
               Login
             </Button>
           )}
-          <AuthFirebaseSocials />
 
-          <MHidden width="smUp">
+          {/* <MHidden width="smUp">
             <Typography variant="body2" align="center" sx={{ mt: 3 }}>
               Don’t have an account?&nbsp;
               <Link variant="subtitle2" component={RouterLink} to={PATH_AUTH.register}>
                 Get started
               </Link>
             </Typography>
-          </MHidden>
+          </MHidden> */}
         </ContentStyle>
       </Container>
     </RootStyle>

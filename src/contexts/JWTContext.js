@@ -11,6 +11,10 @@ import { Icon } from '@mui/material';
 import closeFill from '@iconify/icons-eva/close-fill';
 import { useSnackbar } from 'notistack';
 import user from 'src/redux/slices/user';
+import { Navigate, useNavigate } from 'react-router';
+import { PATH_AUTH, PATH_DASHBOARD } from 'src/routes/paths';
+import { getApp, getApps, initializeApp } from "firebase/app";
+import { browserPopupRedirectResolver, browserSessionPersistence, getAuth, initializeAuth, RecaptchaVerifier, signInWithPhoneNumber } from "firebase/auth";
 // ----------------------------------------------------------------------
 
 const initialState = {
@@ -18,9 +22,26 @@ const initialState = {
   isInitialized: false,
   user: null
 };
+// const window = {
+//   recaptchaVerifier: undefined
+// };
+// const app = initializeApp(firebaseConfig);
+
 if (!firebase.apps.length) {
   firebase.initializeApp(firebaseConfig);
 }
+// const auth = initializeAuth(app, {
+//   persistence: browserSessionPersistence,
+//   popupRedirectResolver: browserPopupRedirectResolver,
+// });
+// const auth = firebase.auth()
+firebase.auth().languageCode = 'it';
+const onSignInSubmit = () => {
+  // TODO(you): Implement
+}
+
+
+
 const handlers = {
   INITIALIZE: (state, action) => {
     const { isAuthenticated, user } = action.payload;
@@ -65,6 +86,7 @@ const AuthContext = createContext({
   logout: () => Promise.resolve(),
   register: () => Promise.resolve(),
   loginWithGoogle: () => Promise.resolve(),
+  sendSMSOTP: () => Promise.resolve(),
 });
 
 AuthProvider.propTypes = {
@@ -74,6 +96,8 @@ AuthProvider.propTypes = {
 function AuthProvider({ children }) {
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
   const [state, dispatch] = useReducer(reducer, initialState);
+  const navigate = useNavigate();
+
 
 
   // useEffect(() => {
@@ -268,6 +292,29 @@ function AuthProvider({ children }) {
       }
     })
   };
+  const sendSMSOTP = async (phoneNumber, callback) => {
+    // console.log('send OTP 1');
+
+    // const appVerifier = new firebase.auth.RecaptchaVerifier('sign-in-button', {
+    //   'size': 'invisible',
+    //   'callback': (response) => {
+    //     // reCAPTCHA solved, allow signInWithPhoneNumber.
+
+    //   }
+    // })
+    // firebase.auth().signInWithPhoneNumber(phoneNumber, appVerifier)
+    //   .then((result) => {
+    //     callback(result);
+    //     // return firebase.auth.PhoneAuthProvider.credential(verificationId,
+    //     //   verificationCode);
+    //   })
+    //   .catch((err) => {
+    //     alert(err);
+    //     appVerifier.reset()
+    //   });
+    // ;
+  }
+
   const login = async (userName, password, callback) => {
     try {
       const response = await axios.post(`/api/v1.0/authorizes`, {
@@ -339,12 +386,14 @@ function AuthProvider({ children }) {
     }
   };
 
+
   const register = async (values, callback) => {
     try {
+      console.log('check register', values);
       const response = await axios.post('/api/v1.0/shops/register', values);
-      // const { accessToken, user } = response.data;
+      const { accessToken, user } = response.data;
       callback(response.data)
-      // window.localStorage.setItem('accessToken', accessToken);
+      window.localStorage.setItem('accessToken', accessToken);
     } catch (error) {
       callback(error.response.data)
     }
@@ -377,6 +426,7 @@ function AuthProvider({ children }) {
       value={{
         ...state,
         method: 'jwt',
+        sendSMSOTP,
         login,
         logout,
         register,
@@ -390,4 +440,4 @@ function AuthProvider({ children }) {
   );
 }
 
-export { AuthContext, AuthProvider };
+export { AuthContext, AuthProvider, firebase };

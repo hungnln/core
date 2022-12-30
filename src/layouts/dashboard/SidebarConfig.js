@@ -72,7 +72,9 @@ const sidebarConfig = [
         //   { title: 'post', path: PATH_DASHBOARD.blog.postById },
         //   { title: 'new post', path: PATH_DASHBOARD.blog.newPost }
         // ]
-      }
+      },
+      { title: 'chat', path: PATH_DASHBOARD.chat.root, icon: ICONS.chat },
+
     ]
   },  // MANAGEMENT
   // ----------------------------------------------------------------------

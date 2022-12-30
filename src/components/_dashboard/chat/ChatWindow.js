@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 // material
 import { Box, Divider, Stack } from '@mui/material';
@@ -20,6 +20,8 @@ import ChatMessageList from './ChatMessageList';
 import ChatHeaderDetail from './ChatHeaderDetail';
 import ChatMessageInput from './ChatMessageInput';
 import ChatHeaderCompose from './ChatHeaderCompose';
+import { HttpTransportType, HubConnectionBuilder, HubConnectionState, LogLevel } from '@microsoft/signalr';
+import useAuth from 'src/hooks/useAuth';
 
 // ----------------------------------------------------------------------
 
@@ -42,6 +44,8 @@ const conversationSelector = (state) => {
 export default function ChatWindow() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const hubConnection = useRef(null);
+  const { user } = useAuth();
   const { pathname } = useLocation();
   const { conversationKey } = useParams();
   const { contacts, recipients, participants, activeConversationId } = useSelector((state) => state.chat);
@@ -49,7 +53,19 @@ export default function ChatWindow() {
 
   const mode = conversationKey ? 'DETAIL' : 'COMPOSE';
   const displayParticipants = participants.filter((item) => item.id !== '8864c717-587d-472a-929a-8e5f298024da-0');
+  const connectHub = async () => {
+    try {
+      await hubConnection.current?.start();
+      if (hubConnection.current?.state === HubConnectionState.Connected) {
+        console.log('hello');
 
+        // await hubConnection.current?.invoke('RegisterUser', user?.id, user?.role);
+        // await hubConnection.current?.invoke('SendMessage', 'd5cfc6d5-8714-4205-a963-7b07ba70417c', 'hello', 'text')
+      }
+    } catch (error) {
+      console.warn(error);
+    }
+  };
   useEffect(() => {
     const getDetails = async () => {
       dispatch(getParticipants(conversationKey));
@@ -73,14 +89,31 @@ export default function ChatWindow() {
       dispatch(markConversationAsRead(activeConversationId));
     }
   }, [dispatch, activeConversationId]);
-
+  useEffect(() => {
+    hubConnection.current = new HubConnectionBuilder().withUrl(`https://b86c-118-69-233-167.ap.ngrok.io/chat`, {
+      skipNegotiation: true,
+      transport: HttpTransportType.WebSockets,
+    }).configureLogging(LogLevel.Information).build()
+    hubConnection.current?.on('MessageReceive', (message) => console.log('message', message))
+    connectHub()
+  }, [])
   const handleAddRecipients = (recipients) => {
     dispatch(addRecipients(recipients));
+  };
+  const connect = async (value) => {
+    const { message } = value
+    try {
+      if (hubConnection.current?.state === HubConnectionState.Connected) {
+        await hubConnection.current?.invoke('SendMessage', 'd5cfc6d5-8714-4205-a963-7b07ba70417c', message, 'text')
+      }
+    } catch (error) {
+      console.warn(error);
+    }
   };
 
   const handleSendMessage = async (value) => {
     try {
-      dispatch(onSendMessage(value));
+      connect(value)
     } catch (error) {
       console.error(error);
     }

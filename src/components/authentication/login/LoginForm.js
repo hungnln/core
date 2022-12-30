@@ -23,7 +23,7 @@ import GooglePlacesAutocomplete from 'react-google-places-autocomplete';
 
 // ----------------------------------------------------------------------
 
-export default function LoginForm({ props }) {
+export default function LoginForm({ isAdmin,props }) {
   const { login } = useAuth();
   const isMountedRef = useIsMountedRef();
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();

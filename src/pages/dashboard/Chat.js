@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 // material
 import { Card, Container } from '@mui/material';
 // redux
@@ -12,6 +12,8 @@ import useSettings from '../../hooks/useSettings';
 import Page from '../../components/Page';
 import HeaderBreadcrumbs from '../../components/HeaderBreadcrumbs';
 import { ChatSidebar, ChatWindow } from '../../components/_dashboard/chat';
+import { HttpTransportType, HubConnectionBuilder, HubConnectionState, LogLevel } from '@microsoft/signalr';
+import useAuth from 'src/hooks/useAuth';
 
 // ----------------------------------------------------------------------
 
@@ -19,10 +21,30 @@ export default function Chat() {
   const { themeStretch } = useSettings();
   const dispatch = useDispatch();
 
+  const { user } = useAuth();
+
   useEffect(() => {
     dispatch(getConversations());
     dispatch(getContacts());
   }, [dispatch]);
+
+
+  // const connectHub = async () => {
+  //   try {
+  //     await hubConnection.current?.start();
+  //     if (hubConnection.current?.state === HubConnectionState.Connected) {
+  //       console.log('hello');
+
+  //       await hubConnection.current?.invoke('RegisterUser', user?.id, user?.role);
+  //       await hubConnection.current?.invoke('SendMessage', 'd5cfc6d5-8714-4205-a963-7b07ba70417c', 'hello', 'text')
+  //     }
+  //   } catch (error) {
+  //     console.warn(error);
+  //   }
+  // };
+  const sendMessage = () => {
+
+  }
 
   return (
     <Page title="Chat | Minimal-UI">

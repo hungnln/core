@@ -31,9 +31,15 @@ export const PackageStatus = {
   shopCancel: 'SHOP_CANCEL'
 }
 export const userRole = {
-  admin: 'ADMIN',
+  admin: 'AMDIN',
   shipper: 'SHIPPER',
   shop: 'SHOP'
+}
+export const DOMAIN = 'https://ship-convenient.azurewebsites.net'
+export const ACCESSTOKEN = 'accessToken'
+export const FIREBASETOKEN = 'firebaseToken'
+export const userStatus = {
+  active: 'ACTIVE',
 }
 export const defaultId = '00000000-0000-0000-0000-000000000000'
 export const GOOGLE_MAPS_API_KEY = 'AIzaSyDyiGQYQgykVRVpeqCWXtqn5l4At9vGp04'

@@ -3,7 +3,7 @@ import googleFill from '@iconify/icons-eva/google-fill';
 import twitterFill from '@iconify/icons-eva/twitter-fill';
 import facebookFill from '@iconify/icons-eva/facebook-fill';
 // material
-import { Stack, Button, Divider, Typography } from '@mui/material';
+import { Stack, Button, Divider, Typography, IconButton } from '@mui/material';
 // hooks
 import useAuth from '../../hooks/useAuth';
 
@@ -38,25 +38,26 @@ export default function AuthFirebaseSocials() {
 
   return (
     <>
-      <Stack direction="row" spacing={2}>
-        <Button fullWidth size="large" color="inherit" variant="outlined" onClick={handleLoginGoogle}>
-          <Icon icon={googleFill} color="#DF3E30" height={24} />
-        </Button>
-
-        <Button fullWidth size="large" color="inherit" variant="outlined" onClick={handleLoginFaceBook}>
-          <Icon icon={facebookFill} color="#1877F2" height={24} />
-        </Button>
-
-        <Button fullWidth size="large" color="inherit" variant="outlined" onClick={handleLoginTwitter}>
-          <Icon icon={twitterFill} color="#1C9CEA" height={24} />
-        </Button>
-      </Stack>
-
-      <Divider sx={{ my: 3 }}>
+      <Divider sx={{ my: 2.5, borderStyle: 'dotted' }}>
         <Typography variant="body2" sx={{ color: 'text.secondary' }}>
           OR
         </Typography>
       </Divider>
+      <Stack direction="row" spacing={2} justifyContent='center'>
+        <IconButton color="inherit" onClick={handleLoginGoogle}>
+          <Icon icon={googleFill} color="#DF3E30" height={24} />
+        </IconButton>
+
+        <IconButton color="inherit" onClick={handleLoginFaceBook}>
+          <Icon icon={facebookFill} color="#1877F2" height={24} />
+        </IconButton>
+
+        <IconButton color="inherit" onClick={handleLoginTwitter}>
+          <Icon icon={twitterFill} color="#1C9CEA" height={24} />
+        </IconButton>
+      </Stack>
+
+
     </>
   );
 }

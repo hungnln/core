@@ -29,20 +29,20 @@ export default function LoginForm({ isAdmin,props }) {
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
   const [showPassword, setShowPassword] = useState(false);
   const LoginSchema = Yup.object().shape({
-    username: Yup.string().required('Username is required'),
+    userName: Yup.string().required('userName is required'),
     password: Yup.string().required('Password is required')
   });
 
   const formik = useFormik({
     initialValues: {
-      username: '',
+      userName: '',
       password: '',
       remember: true
     },
     validationSchema: LoginSchema,
     onSubmit: async (values, { setErrors, setSubmitting, resetForm }) => {
       try {
-        await login(values.username, values.password, isAdmin, message => setErrors({ afterSubmit: message }));
+        await login(values.userName, values.password, message => setErrors({ afterSubmit: message }));
 
         if (isMountedRef.current) {
           setSubmitting(false);
@@ -85,12 +85,12 @@ export default function LoginForm({ isAdmin,props }) {
 
           <TextField
             fullWidth
-            autoComplete="username"
+            autoComplete="userName"
             type="text"
-            label="Username"
-            {...getFieldProps('username')}
-            error={Boolean(touched.username && errors.username)}
-            helperText={touched.username && errors.username}
+            label="userName"
+            {...getFieldProps('userName')}
+            error={Boolean(touched.userName && errors.userName)}
+            helperText={touched.userName && errors.userName}
           />
 
           <TextField
@@ -113,11 +113,11 @@ export default function LoginForm({ isAdmin,props }) {
           />
         </Stack>
 
-        <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ my: 2 }}>
-          <FormControlLabel
+        <Stack direction="row" alignItems="center" justifyContent="flex-end" sx={{ my: 2 }}>
+          {/* <FormControlLabel
             control={<Checkbox {...getFieldProps('remember')} checked={values.remember} />}
             label="Remember me"
-          />
+          /> */}
 
           <Link component={RouterLink} variant="subtitle2" to={PATH_AUTH.resetPassword}>
             Forgot password?

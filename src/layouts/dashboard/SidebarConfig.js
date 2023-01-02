@@ -61,7 +61,7 @@ const sidebarConfig = [
   },
   {
     subheader: 'dashboard',
-    role: userRole.shop,
+    role: userRole.user,
     items: [
       {
         title: 'order',

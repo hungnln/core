@@ -7,7 +7,7 @@ import eyeFill from '@iconify/icons-eva/eye-fill';
 import closeFill from '@iconify/icons-eva/close-fill';
 import eyeOffFill from '@iconify/icons-eva/eye-off-fill';
 // material
-import { Stack, TextField, IconButton, InputAdornment, Alert, Typography, Autocomplete, DialogTitle } from '@mui/material';
+import { Stack, TextField, IconButton, InputAdornment, Alert, Typography, Autocomplete, DialogTitle, FormHelperText, Box } from '@mui/material';
 import { LoadingButton } from '@mui/lab';
 // hooks
 import useAuth from '../../../hooks/useAuth';
@@ -28,6 +28,8 @@ import { DialogAnimate } from 'src/components/animate';
 import VerifyCode from 'src/pages/authentication/VerifyCode';
 import { useDispatch } from 'react-redux';
 import { registerUser } from 'src/redux/slices/user';
+import { UploadAvatar } from 'src/components/upload';
+import { fData } from 'src/utils/formatNumber';
 // ----------------------------------------------------------------------
 
 export default function RegisterForm() {
@@ -40,14 +42,13 @@ export default function RegisterForm() {
   const [errorState, setErrorState] = useState();
   const dispatch = useDispatch();
   const RegisterSchema = Yup.object().shape({
-    displayName: Yup.string().min(2, 'Too Short!').max(50, 'Too Long!').required('First name required'),
-    phoneNumber: Yup.string().length(12).required('Phone is required'),
-    address: Yup.string().required('Address is required'),
+    phone: Yup.string().length(12).required('Phone is required'),
     email: Yup.string().email('Email must be a valid email address').required('Email is required'),
     password: Yup.string().required('Password is required'),
-    longitude: Yup.number().required('Longlat is required'),
-    latitude: Yup.number().required('Longlat is required'),
-    userName: Yup.string().required('User Name is required'),
+    userName: Yup.string().required('Username is required'),
+    firstName: Yup.string().required('First name is required'),
+    lastName: Yup.string().required('Last name is required'),
+    // photoUrl: Yup.string().required('Photo is required ')
 
 
   });
@@ -58,12 +59,11 @@ export default function RegisterForm() {
       userName: '',
       password: '',
       email: '',
-      phoneNumber: '',
+      phone: '',
       photoUrl: 'string',
-      displayName: '',
-      address: '',
-      longitude: null,
-      latitude: null,
+      firstName: '',
+      lastName: '',
+      role: 'USER'
     },
     validationSchema: RegisterSchema,
     onSubmit: async (values, { setErrors, setSubmitting }) => {
@@ -91,24 +91,35 @@ export default function RegisterForm() {
       }
     }
   });
-  const handleChangeLocation = useCallback((callback) => {
-    const { lng, lat } = callback.geometry.location;
-    const address = callback.formatted_address;
-    formik.setFieldValue('longitude', lng);
-    formik.setFieldValue('latitude', lat);
-    formik.setFieldValue('address', address);
+  // const handleChangeLocation = useCallback((callback) => {
+  //   const { lng, lat } = callback.geometry.location;
+  //   const address = callback.formatted_address;
+  //   formik.setFieldValue('longitude', lng);
+  //   formik.setFieldValue('latitude', lat);
+  //   formik.setFieldValue('address', address);
 
 
-  })
+  // })
   const handleChangePhoneNumber = (value) => {
-    formik.setFieldValue('phoneNumber', value);
+    formik.setFieldValue('phone', value);
   }
   const handleCloseModal = () => {
     setOpenModal(!isOpenModal)
   }
 
-  const { values, errors, touched, handleSubmit, isSubmitting, getFieldProps, handleChange } = formik;
-
+  const { values, errors, touched, handleSubmit, isSubmitting, getFieldProps, handleChange, setFieldValue } = formik;
+  const handleDrop = useCallback(
+    // (acceptedFiles) => {
+    //   const file = acceptedFiles[0];
+    //   if (file) {
+    //     setFieldValue('photoUrl', {
+    //       ...file,
+    //       preview: URL.createObjectURL(file),
+    //     });
+    //   }
+    // },
+    // [setFieldValue]
+  );
   return (
     <FormikProvider value={formik}>
       <Form autoComplete="off" noValidate onSubmit={handleSubmit}>
@@ -122,15 +133,21 @@ export default function RegisterForm() {
             helperText={touched.userName && errors.userName}
           />
           <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-
-
             <TextField
               fullWidth
               autoComplete='name'
-              label="Display Name"
-              {...getFieldProps('displayName')}
-              error={Boolean(touched.displayName && errors.displayName)}
-              helperText={touched.displayName && errors.displayName}
+              label="First Name"
+              {...getFieldProps('firstName')}
+              error={Boolean(touched.firstName && errors.firstName)}
+              helperText={touched.firstName && errors.firstName}
+            />
+            <TextField
+              fullWidth
+              autoComplete='name'
+              label="Last Name"
+              {...getFieldProps('lastName')}
+              error={Boolean(touched.lastName && errors.lastName)}
+              helperText={touched.lastName && errors.lastName}
             />
           </Stack>
 
@@ -169,14 +186,14 @@ export default function RegisterForm() {
             autoComplete="phone"
             type=""
             label="Phone Number"
-            {...getFieldProps('phoneNumber')}
+            {...getFieldProps('phone')}
 
-            error={Boolean(touched.phoneNumber && errors.phoneNumber)}
-            helperText={touched.phoneNumber && errors.phoneNumber}
+            error={Boolean(touched.phone && errors.phone)}
+            helperText={touched.phone && errors.phone}
           /> */}
-          <MuiPhoneNumber label="Phone Number" {...getFieldProps('phoneNumber')} variant="outlined" defaultCountry='vn' onChange={handleChangePhoneNumber}
-            error={Boolean(touched.phoneNumber && errors.phoneNumber)}
-            helperText={touched.phoneNumber && errors.phoneNumber}
+          <MuiPhoneNumber label="Phone Number" {...getFieldProps('phone')} variant="outlined" defaultCountry='vn' onChange={handleChangePhoneNumber}
+            error={Boolean(touched.phone && errors.phone)}
+            helperText={touched.phone && errors.phone}
           />
           {/* <Autocomplete
             fullWidth
@@ -188,7 +205,7 @@ export default function RegisterForm() {
             error={Boolean(touched.address && errors.address)}
             helperText={touched.address && errors.address}
           /> */}
-          <GoogleMaps onChangeLocation={handleChangeLocation} touched={touched} errors={errors} />
+          {/* <GoogleMaps onChangeLocation={handleChangeLocation} touched={touched} errors={errors} /> */}
 
           {/* {Boolean(touched.address) && (
             <Mapbox onChangeLocation={handleChangeLocation} />
@@ -198,6 +215,34 @@ export default function RegisterForm() {
             <Typography variant='caption' sx={{ color: 'error.main' }}>Please pick a destination</Typography>
 
           )} */}
+          <Box>
+            <UploadAvatar
+              sx={{ textAlign: 'center' }}
+              accept="image/*"
+              file={values.photoUrl}
+              maxSize={3145728}
+              onDrop={handleDrop}
+              error={Boolean(touched.photoUrl && errors.photoUrl)}
+              caption={
+                <Typography
+                  variant="caption"
+                  sx={{
+                    mt: 2,
+                    mx: 'auto',
+                    display: 'block',
+                    textAlign: 'center',
+                    color: 'text.secondary'
+                  }}
+                >
+                  Allowed *.jpeg, *.jpg, *.png, *.gif
+                  <br /> max size of {fData(3145728)}
+                </Typography>
+              }
+            />
+            <FormHelperText error sx={{ px: 2, textAlign: 'center' }}>
+              {touched.photoUrl && errors.photoUrl}
+            </FormHelperText>
+          </Box>
 
           <LoadingButton id='sign-in-button' fullWidth size="large" type="submit" variant="contained" loading={isSubmitting}>
             Register

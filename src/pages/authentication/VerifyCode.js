@@ -35,14 +35,14 @@ export default function VerifyCode({ onCancel }) {
   const [result, setResult] = useState();
   // const { registerUser } = useSelector(state => state.user)
   const registerUser = JSON.parse(sessionStorage.getItem('user_register_information'));
-  const { phoneNumber } = registerUser || '';
+  const { phone } = registerUser || '';
   const [isShow, setShow] = useState(false);
   const [counter, setCounter] = useState(5);
   const countRef = useRef(null)
   const sendSMSOTP = () => {
-    if (phoneNumber === '') return
-    console.log(phoneNumber, 'phoneNumber');
-    firebase.auth().signInWithPhoneNumber(phoneNumber, window.recaptchaVerifier)
+    if (phone === '') return
+    console.log(phone, 'phone');
+    firebase.auth().signInWithPhoneNumber(phone, window.recaptchaVerifier)
       .then((result) => {
         console.log('result', result);
         setResult(result);
@@ -106,7 +106,7 @@ export default function VerifyCode({ onCancel }) {
 
 
   return (
-    <RootStyle title="Verify | Minimal UI">
+    <RootStyle title="Verify | Ship Convenient">
       <LogoOnlyLayout />
 
       <Container>
@@ -125,7 +125,7 @@ export default function VerifyCode({ onCancel }) {
             Please check your phone!
           </Typography>
           <Typography sx={{ color: 'text.secondary' }}>
-            We have send a 6-digit confirmation code to {phoneNumber}, please enter the code in below box to verify your
+            We have send a 6-digit confirmation code to {phone}, please enter the code in below box to verify your
             phone number.
           </Typography>
 

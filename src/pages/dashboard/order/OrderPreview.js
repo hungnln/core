@@ -5,7 +5,7 @@ import { useParams, useLocation } from 'react-router-dom';
 import { Container } from '@mui/material';
 // redux
 import { useDispatch, useSelector } from '../../../redux/store';
-import { getOrderDetail, getOrderListByAdmin, getOrderListByShopId } from '../../../redux/slices/order';
+import { getOrderDetail, getOrderListByAdmin } from '../../../redux/slices/order';
 // routes
 
 // hooks
@@ -54,16 +54,16 @@ export default function OrderPreview() {
         return () => clearTimeout(getDetail);
     }, [])
     return (
-        <Page title="Order: Preview order | Minimal-UI">
+        <Page title="Package: Preview package | Ship Convenient">
             <Container maxWidth={themeStretch ? false : 'lg'}>
                 {loading ?
                     <LoadingScreen sx={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }} />
                     : (<>
                         <HeaderBreadcrumbs
-                            heading='Packages Detail'
+                            heading='Package Detail'
                             links={[
                                 { name: 'Dashboard', href: PATH_DASHBOARD.root },
-                                { name: 'Order', href: PATH_DASHBOARD.order.root },
+                                { name: 'Package', href: PATH_DASHBOARD.order.root },
                                 { name: id }
                             ]}
                         />

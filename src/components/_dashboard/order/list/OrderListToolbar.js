@@ -62,7 +62,7 @@ export default function OrderListToolbar({ numSelected, filterName, onFilterName
           <SearchStyle
             value={filterName}
             onChange={onFilterName}
-            placeholder="Search order..."
+            placeholder="Search package..."
             startAdornment={
               <InputAdornment position="start">
                 <Box component={Icon} icon={searchFill} sx={{ color: 'text.disabled' }} />

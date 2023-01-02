@@ -11,6 +11,7 @@ import { GOOGLE_MAPS_API_KEY } from 'src/config';
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { debounce } from 'lodash';
 import axios from '../../../utils/axios';
+import match from 'autosuggest-highlight/match';
 
 // This key was created specifically for the demo in mui.com.
 // You need to create a new one for your application.
@@ -29,10 +30,9 @@ function loadScript(src, position, id) {
 
 const autocompleteService = { current: null };
 
-export default function GoogleMaps({ currentAddress, onChangeLocation, touched, errors, currentGeocoding }) {
+export default function GoogleMaps({ checkSubmit, currentAddress, onChangeLocation, touched, errors, currentGeocoding, handleSubmit }) {
     const [lat, setLat] = useState(0);
     const [lng, setLng] = useState(0);
-    const [searchQuery, setSearchQuery] = useState('');
     const [value, setValue] = useState(null);
     const [inputValue, setInputValue] = useState('');
     const [options, setOptions] = useState([]);
@@ -101,53 +101,57 @@ export default function GoogleMaps({ currentAddress, onChangeLocation, touched, 
     //         active = false;
     //     };
     // }, [value, inputValue, fetch]);
-    const handleChangeSearch = async (event) => {
+    const handleChangeSearch = async (searchValue) => {
         try {
-            const { value } = event.target;
-            setSearchQuery(value)
-            // console.log('value', value);
-            if (value.trim().length > 0) {
-                const response = await axios.get(`/api/v1.0/goongs?search=${value}`);
-                console.log(response.data.data.predictions, 'cehck');
-                setOptions(response.data.data.predictions);
-            } else {
-                setOptions([]);
+            let newOptions = [];
+            if (value) {
+                newOptions = [value]
             }
+            if (searchValue.trim().length > 0) {
+                const response = await axios.get(`/api/v1.0/goongs?search=${searchValue}`);
+                const listLocation = response.data.data;
+                if (listLocation.length > 0) {
+                    newOptions = [...newOptions, ...listLocation]
+                }
+
+            }
+            setOptions(newOptions);
         } catch (error) {
             console.error(error);
 
         }
     };
-    const getLatLngByPlaceId = async (value) => {
-        try {
+    // const getLatLngByPlaceId = async (value) => {
+    //     try {
 
-            const response = await axios.get(`/api/v1.0/goongs/detail?placeId=${value.place_id}`)
-            const location = response.data.data.result
-            onChangeLocation(location)
-        }
-        catch (error) {
-            console.error(error);
+    //         const response = await axios.get(`/api/v1.0/goongs/detail?placeId=${value.place_id}`)
+    //         const location = response.data.data.result
+    //         onChangeLocation(location)
+    //     }
+    //     catch (error) {
+    //         console.error(error);
 
-        }
-    }
-    useEffect(() => {
-        if (value !== null) {
-            getLatLngByPlaceId(value);
-        }
-    }, [value])
+    //     }
+    // }
+
     // Thử chuyển sang throttle 
     const debounceSearch = useCallback(throttle((nextValue) => handleChangeSearch(nextValue), 200), [])
-    const handleInputOnchange = (e) => {
+    useEffect(() => {
+        console.log('check inpuvalue', inputValue);
+        debounceSearch(inputValue)
 
-        // setKeyword(value);
-        debounceSearch(e);
-    }
+    }, [value, inputValue, debounceSearch])
+    useEffect(() => {
+        if (value !== null) {
+            console.log('check value change', value);
+            onChangeLocation(value)
+        }
+    }, [value])
     return (
         <Autocomplete
-
-
+            isOptionEqualToValue={(option, value) => option.name === value}
             getOptionLabel={(option) =>
-                typeof option === 'string' ? option : option.description
+                typeof option === 'string' ? option : option.name
             }
             filterOptions={(x) => x}
             options={options}
@@ -159,24 +163,21 @@ export default function GoogleMaps({ currentAddress, onChangeLocation, touched, 
                 setOptions(newValue ? [newValue, ...options] : options);
                 setValue(newValue);
             }}
-            // onInputChange={(event, newInputValue) => {
-            //     setInputValue(newInputValue);
-            // }}
-            onInputChange={handleInputOnchange}
+            onInputChange={(event, newInputValue) => {
+                setInputValue(newInputValue);
+            }}
+            // onInputChange={handleInputOnchange}
             renderInput={(params) => (
                 <TextField {...params} fullWidth
                     label="Address"
                     name='address'
-                    error={Boolean(touched.address && errors.address) || Boolean(touched.destinationAddress && errors.destinationAddress)}
-                    helperText={touched.address && errors.address || touched.destinationAddress && errors.destinationAddress} />
+                    error={Boolean(touched && errors)}
+                    helperText={touched && errors}
+                />
             )}
-            renderOption={(props, option) => {
-                const matches = option.structured_formatting.main_text_matched_substrings;
-                const parts = parse(
-                    option.structured_formatting.main_text,
-                    matches.map((match) => [match.offset, match.offset + match.length]),
-                );
-
+            renderOption={(props, option, { inputValue }) => {
+                const matches = match(option.name, inputValue, { insideWords: true });
+                const parts = parse(option.name, matches);
                 return (
                     <li {...props}>
                         <Grid container alignItems="center">
@@ -199,7 +200,7 @@ export default function GoogleMaps({ currentAddress, onChangeLocation, touched, 
                                 ))}
 
                                 <Typography variant="body2" color="text.secondary">
-                                    {option.structured_formatting.secondary_text}
+                                    {option.name}
                                 </Typography>
                             </Grid>
                         </Grid>

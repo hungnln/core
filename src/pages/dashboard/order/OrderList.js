@@ -24,7 +24,7 @@ import {
     Tabs
 } from '@mui/material';
 import useSettings from 'src/hooks/useSettings';
-import { deleteOrder, getOrderListByAdmin, getOrderListByShopId } from 'src/redux/slices/order';
+import { deleteOrder, getOrderListByAdmin, getOrderListBySenderId } from 'src/redux/slices/order';
 import { PATH_DASHBOARD } from 'src/routes/paths';
 import Scrollbar from 'src/components/Scrollbar';
 import Page from 'src/components/Page';
@@ -52,15 +52,15 @@ import { fCurrency } from 'src/utils/formatNumber';
 const TABLE_HEAD = [
     { id: 'receiver', label: 'Receiver', alignRight: false },
     { id: 'createAt', label: 'Created At', alignRight: false },
-    { id: 'shipper', label: 'Shipper', alignRight: false },
+    { id: 'deliver', label: 'Deliver', alignRight: false },
     { id: 'priceShip', label: 'Price Ship', alignRight: false },
     { id: 'status', label: 'Status', alignRight: false },
     { id: '' }
 ];
 const ADMIN_TABLE_HEAD = [
-    { id: 'shop', label: 'Shop', alignRight: false },
+    { id: 'sender', label: 'Sender', alignRight: false },
     { id: 'createAt', label: 'Created At', alignRight: false },
-    { id: 'shipper', label: 'Shipper', alignRight: false },
+    { id: 'deliver', label: 'Deliver', alignRight: false },
     { id: 'priceShip', label: 'Price Ship', alignRight: false },
     { id: 'status', label: 'Status', alignRight: false },
     { id: '' }
@@ -119,8 +119,11 @@ export default function OrderList() {
     const [packageType, setPackageType] = useState('');
     const isAdmin = user.role === userRole.admin
     const packageTypes = [];
-
-    orderList.forEach(element => {
+    const list = orderList?.data || [];
+    const paginated = orderList?.paginated || {};
+    console.log('list and paginate', list, paginated);
+    const selectedStatus = null
+    list?.forEach(element => {
 
         if (!packageTypes.includes(element.status)) {
             packageTypes.push(element.status)
@@ -130,15 +133,21 @@ export default function OrderList() {
     useEffect(() => {
         const getOrderList = setInterval(() => {
             if (isAdmin) {
-                dispatch(getOrderListByAdmin())
+                dispatch(getOrderListByAdmin(selectedStatus, page, rowsPerPage))
             } else {
-                dispatch(getOrderListByShopId(user.id));
+                dispatch(getOrderListBySenderId(user.id, selectedStatus, page, rowsPerPage));
             }
         }, 5000)
-        return () => clearTimeout(getOrderList);
+        return () => clearInterval(getOrderList);
 
-    }, [dispatch]);
-
+    }, [dispatch, selectedStatus, page, rowsPerPage]);
+    useEffect(() => {
+        if (isAdmin) {
+            dispatch(getOrderListByAdmin(selectedStatus, page, rowsPerPage))
+        } else {
+            dispatch(getOrderListBySenderId(user.id, selectedStatus, page, rowsPerPage));
+        }
+    }, [selectedStatus, page, rowsPerPage])
     const handleRequestSort = (event, property) => {
         const isAsc = orderBy === property && order === 'asc';
         setOrder(isAsc ? 'desc' : 'asc');
@@ -147,7 +156,7 @@ export default function OrderList() {
 
     const handleSelectAllClick = (event) => {
         if (event.target.checked) {
-            const newSelecteds = orderList.map((n) => n.name);
+            const newSelecteds = list.map((n) => n.name);
             setSelected(newSelecteds);
             return;
         }
@@ -189,9 +198,11 @@ export default function OrderList() {
         dispatch(deleteOrder(orderId));
     };
 
-    const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - orderList.length) : 0;
+    // const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - list.length) : 0;
+    const emptyRows = page > 0 ? Math.max(0, rowsPerPage - list.length) : 0;
 
-    const filteredOrders = applySortFilter(orderList, getComparator(order, orderBy), filterName, packageType);
+
+    const filteredOrders = applySortFilter(list, getComparator(order, orderBy), filterName, packageType);
 
     const isOrderNotFound = filteredOrders.length === 0;
 
@@ -201,13 +212,13 @@ export default function OrderList() {
     };
 
     return (
-        <Page title="Order: List | Minimal-UI">
+        <Page title="Package: List | Ship Convenient">
             <Container maxWidth={themeStretch ? false : 'lg'}>
                 <HeaderBreadcrumbs
-                    heading="Order List"
+                    heading="Package List"
                     links={[
                         { name: 'Dashboard', href: PATH_DASHBOARD.root },
-                        { name: 'Order', href: PATH_DASHBOARD.order.root },
+                        { name: 'Package', href: PATH_DASHBOARD.order.root },
                         { name: 'List' }
                     ]}
                     action={
@@ -239,7 +250,8 @@ export default function OrderList() {
                             variant={theme.palette.mode === 'light' ? 'ghost' : 'filled'}
                             color='success'
                         >
-                            {sentenceCase(orderList.length.toString())}
+                            {/* {sentenceCase(paginated.totalCount.toString() || 0)} */}
+                            {paginated.totalCount || 0}
                         </Label>} label='All'
                         />
                         {packageTypes.map((status, index) => {
@@ -247,11 +259,11 @@ export default function OrderList() {
                                 icon={<Label sx={{ mr: 1 }}
                                     variant={theme.palette.mode === 'light' ? 'ghost' : 'filled'}
                                     // color='success'
-                                    color={((status === PackageStatus.deliveryFailed || status === PackageStatus.reject || status === PackageStatus.shopCancel || status === PackageStatus.shipperCancel) && 'error') || (status === PackageStatus.waiting && 'warning') || 'success'}
+                                    color={((status === PackageStatus.deliveryFailed || status === PackageStatus.reject || status === PackageStatus.senderCancel || status === PackageStatus.deliverCancel) && 'error') || (status === PackageStatus.waiting && 'warning') || 'success'}
 
 
                                 >
-                                    {sentenceCase(orderList.filter(order => order.status === status).length.toString())}
+                                    {sentenceCase(list.filter(order => order.status === status).length.toString())}
                                 </Label>}
                                 label={capitalCase(status)}
                             />
@@ -268,16 +280,15 @@ export default function OrderList() {
                                     order={order}
                                     orderBy={orderBy}
                                     headLabel={isAdmin ? ADMIN_TABLE_HEAD : TABLE_HEAD}
-                                    rowCount={orderList.length}
+                                    rowCount={list.length}
                                     numSelected={selected.length}
                                     onRequestSort={handleRequestSort}
                                 // onSelectAllClick={handleSelectAllClick}
                                 />
                                 <TableBody>
-                                    {filteredOrders.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
-                                        const { id, shop, shipper, destinationAddress, shopId, receiverName, receiverPhone, priceShip, createdAt, status, shipperId, note } = row;
-                                        // const isItemSelected = selected.indexOf(name) !== -1;
-
+                                    {filteredOrders.map((row) => {
+                                        const { id, sender, deliver, destinationAddress, senderId, receiverName, receiverPhone, priceShip, createdAt, status, deliverId, note } = row;
+                                        // const isItemSelected = selected.indexOf(name) !== -1;                                     
                                         return (
                                             <TableRow
                                                 hover
@@ -296,7 +307,11 @@ export default function OrderList() {
                                                             {/* <Avatar alt={name} src={avatarUrl} /> */}
                                                             <Stack direction="column" spacing={1}>
                                                                 <Typography variant="subtitle2" noWrap>
-                                                                    {shop.displayName}
+                                                                    {sender.userName}
+                                                                </Typography>
+                                                                <Typography variant="body2" noWrap sx={{ color: 'text.secondary' }}>
+                                                                    {sender.infoUser.phone}
+                                                                    {/* {sender.infoUser.firstName +" "+ sender.infoUser.lastName} {sender.infoUser.phone} */}
                                                                 </Typography>
                                                                 {/* <Typography variant="body2" noWrap>
                                                                     {destinationAddress}
@@ -311,22 +326,24 @@ export default function OrderList() {
                                                             <Stack direction="column" spacing={1}>
                                                                 <Typography variant="subtitle2" noWrap>
                                                                     {receiverName}
+
                                                                 </Typography>
-                                                                <Typography variant="body2" noWrap sx={{ color: 'text.secondary' }}>
-                                                                    {destinationAddress} {receiverPhone}
+
+                                                                <Typography noWrap variant="body2" sx={{ color: 'text.secondary', textOverflow: 'ellipsis' }}>
+                                                                    {destinationAddress}
                                                                 </Typography>
                                                             </Stack>
                                                         </Stack>
                                                     </TableCell>
                                                 )}
                                                 <TableCell align="left">{moment.utc(createdAt).utcOffset(7).format('DD-MM-YYYY HH:mm')}</TableCell>
-                                                <TableCell align="left">{shipper && (
+                                                <TableCell align="left">{deliver && (
                                                     <Stack direction="column" spacing={1}>
                                                         <Typography variant="subtitle2" noWrap>
-                                                            {shipper.displayName}
+                                                            {deliver.userName}
                                                         </Typography>
                                                         <Typography variant="body2" noWrap sx={{ color: 'text.secondary' }}>
-                                                            {shipper.phoneNumber}
+                                                            {deliver.infoUser.phoneNumber}
                                                         </Typography>
                                                     </Stack>
                                                 ) || 'Not found'}</TableCell>
@@ -336,7 +353,7 @@ export default function OrderList() {
                                                 <TableCell align="left">
                                                     <Label
                                                         variant={theme.palette.mode === 'light' ? 'ghost' : 'filled'}
-                                                        color={((status === PackageStatus.deliveryFailed || status === PackageStatus.reject || status === PackageStatus.shopCancel || status === PackageStatus.shipperCancel) && 'error') || (status === PackageStatus.waiting && 'warning') || 'success'}
+                                                        color={((status === PackageStatus.deliveryFailed || status === PackageStatus.reject || status === PackageStatus.senderCancel || status === PackageStatus.deliverCancel) && 'error') || (status === PackageStatus.waiting && 'warning') || 'success'}
                                                     >
                                                         {sentenceCase(status)}
                                                     </Label>
@@ -370,7 +387,7 @@ export default function OrderList() {
                     <TablePagination
                         rowsPerPageOptions={[5, 10, 25]}
                         component="div"
-                        count={orderList.length}
+                        count={paginated.totalCount || 0}
                         rowsPerPage={rowsPerPage}
                         page={page}
                         onPageChange={handleChangePage}

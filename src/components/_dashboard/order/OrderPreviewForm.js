@@ -53,7 +53,7 @@ export default function OrderPreviewForm() {
   const { user } = useAuth();
   const [isOpenModal, setOpenModal] = useState(false)
   const isAdmin = user.role === userRole.admin
-  const { startAddress, shop, shipper, shipperId, destinationAddress, receiverName, receiverPhone, createdAt, status, products, priceShip, note, volume, weight, distance, shopId } = currentOrder;
+  const { startAddress, sender, senderId, deliver, deliverId, destinationAddress, receiverName, receiverPhone, createdAt, status, products, priceShip, note, volume, weight, distance } = currentOrder;
   function subtotal(items) {
     return items?.map(({ price }) => price).reduce((sum, i) => sum + i, 0);
   }
@@ -116,7 +116,7 @@ export default function OrderPreviewForm() {
           {/* ---------------end------------------ */}
 
           {/* Shop cancel đơn hàng  */}
-          {(status === PackageStatus.approved || status === PackageStatus.shipperPickup || status === PackageStatus.waiting) && !isAdmin && (
+          {(status === PackageStatus.approved || status === PackageStatus.deliverPickup || status === PackageStatus.waiting) && !isAdmin && (
             <LoadingButton color='error' type="submit" variant="contained" onClick={() => { dispatch(cancelPackage(id, callback => handleMessage(callback))) }}>
               Cancel
             </LoadingButton>
@@ -139,7 +139,7 @@ export default function OrderPreviewForm() {
           <Grid item xs={6} mb={5} sx={{ textAlign: 'right' }}>
             <Button onClick={handleCloseModal}
               variant='contained'
-              color={(status === PackageStatus.deliveryFailed || status === PackageStatus.reject || status === PackageStatus.shopCancel && 'error') || (status === PackageStatus.waiting && 'warning') || 'success'}
+              color={(status === PackageStatus.deliveryFailed || status === PackageStatus.reject || status === PackageStatus.senderCancel && 'error') || (status === PackageStatus.waiting && 'warning') || 'success'}
 
               sx={{ mb: 1 }}
             >
@@ -149,9 +149,9 @@ export default function OrderPreviewForm() {
           </Grid>
           <Grid item xs={6} mb={5}>
             <Typography variant='overline' sx={{ color: 'text.secondary', mb: 2 }}>PACKAGES FROM</Typography>
-            <Typography variant='body2'>{shop?.displayName}</Typography>
+            <Typography variant='body2'>{sender?.infoUser.firstName} {sender?.infoUser.lastName}</Typography>
             <Typography variant='body2'>{startAddress}</Typography>
-            <Typography variant='body2'>Phone : {shop?.phoneNumber}</Typography>
+            <Typography variant='body2'>Phone : {sender?.infoUser.phone}</Typography>
           </Grid>
           <Grid item xs={6} mb={5}>
             <Typography variant='overline' sx={{ color: 'text.secondary', mb: 2 }}>PACKAGES To</Typography>
@@ -304,39 +304,39 @@ export default function OrderPreviewForm() {
 
       </Paper >
       <DialogAnimate open={isOpenModal} onClose={handleCloseModal}>
-        <DialogTitle>Shipper information</DialogTitle>
+        <DialogTitle>Deliver information</DialogTitle>
         {/* <AddressNewForm onCancel={handleCloseModal} currentAddress={values} onChange={handleChangeReceiverAddress} /> */}
         <Stack direction='column' spacing={3} sx={{ p: 3 }} justifyContent='center'>
 
-          {shipper && (<>
+          {deliver && (<>
             <Stack
               sx={{ my: 2 }}
               justifyContent="center"
               alignItems="center">
               <Avatar
-                alt={shipper.userName}
-                src={shipper.photoUrl}
+                alt={deliver.userName}
+                src={deliver.photoUrl}
                 // src={shipper.photoUrl}
                 sx={{ width: 100, height: 100 }}
               />
             </Stack>
             <Stack direction='row' justifyContent='space-between' spacing={1} sx={{ px: 4 }}>
               <Typography variant='body1'  >Display Name: </Typography>
-              <Typography variant='h6' sx={{ color: 'text.secondary', ml: 1 }} >{shipper.displayName} </Typography>
+              <Typography variant='h6' sx={{ color: 'text.secondary', ml: 1 }} >{deliver.infoUser.firstName} {deliver.infoUser.lastName} </Typography>
             </Stack>
             <Stack direction='row' justifyContent='space-between' spacing={1} sx={{ px: 4 }}>
               <Typography variant='body1'  >Email: </Typography>
-              <Typography variant='h6' sx={{ color: 'text.secondary', ml: 1 }} >{shipper.email} </Typography>
+              <Typography variant='h6' sx={{ color: 'text.secondary', ml: 1 }} >{deliver.infoUser.email} </Typography>
             </Stack>
             <Stack direction='row' justifyContent='space-between' spacing={1} sx={{ px: 4 }}>
               <Typography variant='body1'  >Phone Number: </Typography>
-              <Typography variant='h6' sx={{ color: 'text.secondary', ml: 1 }} >{shipper.phoneNumber} </Typography>
+              <Typography variant='h6' sx={{ color: 'text.secondary', ml: 1 }} >{deliver.infoUser.phone} </Typography>
             </Stack>
           </>)}
-          {!shipper && (
+          {!deliver && (
             <Stack direction='row' justifyContent='space-evenly' spacing={1} sx={{ p: 4 }}>
               <InfoIcon color='info' />
-              <Typography variant='h6' sx={{ color: 'text.info', ml: 1 }} >Chưa có thông tin shipper</Typography>
+              <Typography variant='h6' sx={{ color: 'text.info', ml: 1 }} >Chưa tìm thấy người dùng tiện đường</Typography>
             </Stack>
           )}
 

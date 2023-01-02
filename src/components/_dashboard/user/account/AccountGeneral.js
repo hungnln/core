@@ -29,9 +29,9 @@ export default function AccountGeneral() {
     enableReinitialize: true,
     initialValues: {
       displayName: user.displayName || '',
-      email: user.email,
-      photoURL: user.photoURL,
-      phoneNumber: user.phoneNumber,
+      email: user.infoUser.email,
+      photoURL: user.infoUser.photoUrl,
+      phoneNumber: user.infoUser.phone,
       country: user.country,
       address: user.address,
       state: user.state,

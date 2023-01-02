@@ -10,7 +10,15 @@ import { PackageStatus } from 'src/config';
 const initialState = {
     isLoading: false,
     error: false,
-    orderList: [],
+    orderList: {
+        data: [],
+        paginated: {
+            pageIndex: 0,
+            pageSize: 0,
+            totalCount: 0,
+            totalPage: 0
+        }
+    },
     currentOrder: {},
     orderCreate: {}
 };
@@ -47,7 +55,18 @@ const slice = createSlice({
         createOrder(state, action) {
             state.isLoading = false;
             state.error = false;
-            const newOrderList = [...state.orderList, action.payload];
+            const {data,paginated} = state.orderList
+            const newTotalCount = paginated.totalCount + 1 || 1
+            const newData = [...data, action.payload]
+            const newOrderList = {
+                data: newData,
+                paginated: {
+                    ...paginated,
+                    totalCount: newTotalCount
+                }
+            };
+            console.log('new list', newOrderList);
+            // const newOrderList = [...state.orderList, action.payload];
             state.orderList = newOrderList;
         },
         changeCurrentPackageStatus(state, action) {
@@ -55,13 +74,13 @@ const slice = createSlice({
             state.error = false;
             const newPackageStatus = action.payload;
             state.currentOrder = { ...state.currentOrder, status: newPackageStatus }
-            const newPackageList = state.orderList.map(order => {
+            const newPackageList = state.orderList.data.map(order => {
                 if (order.id === state.currentOrder.id) {
                     return { ...order, status: newPackageStatus }
                 }
                 return order
             })
-            state.orderList = newPackageList
+            state.orderList.data = newPackageList
         }
 
 
@@ -76,29 +95,55 @@ export default slice.reducer;
 export const { onToggleFollow, deleteOrder } = slice.actions;
 
 // ----------------------------------------------------------------------
-export function getOrderListByShopId(shopId) {
+export function getOrderListBySenderId(senderId, status, pageIndex, pageSize) {
+    if (status) {
+        return async (dispatch) => {
+            dispatch(slice.actions.startLoading());
+            try {
+                const response = await axios.get(`/api/v1.0/packages?senderId=${senderId}&status=${status}&pageIndex=${pageIndex}&pageSize=${pageSize}`);
+                console.log('responese', response);
+                dispatch(slice.actions.getOrderList(response.data));
+            } catch (error) {
+                dispatch(slice.actions.hasError(error));
+            }
+        };
+    }
     return async (dispatch) => {
         dispatch(slice.actions.startLoading());
         try {
-            const response = await axios.get(`/api/v1.0/packages?shopId=${shopId}`);
+            const response = await axios.get(`/api/v1.0/packages?senderId=${senderId}&pageIndex=${pageIndex}&pageSize=${pageSize}`);
             console.log('responese', response);
-            dispatch(slice.actions.getOrderList(response.data.data));
+            dispatch(slice.actions.getOrderList(response.data));
         } catch (error) {
             dispatch(slice.actions.hasError(error));
         }
     };
 }
-export function getOrderListByAdmin() {
+export function getOrderListByAdmin(status, pageIndex, pageSize) {
+    if (status) {
+        return async (dispatch) => {
+            dispatch(slice.actions.startLoading());
+            try {
+                const response = await axios.get(`/api/v1.0/packages?status=${status}&pageIndex=${pageIndex}&pageSize=${pageSize}`);
+                console.log('responese', response);
+                dispatch(slice.actions.getOrderList(response.data));
+            } catch (error) {
+                dispatch(slice.actions.hasError(error));
+            }
+        };
+    }
     return async (dispatch) => {
         dispatch(slice.actions.startLoading());
         try {
-            const response = await axios.get(`/api/v1.0/packages`);
+            const response = await axios.get(`/api/v1.0/packages?pageIndex=${pageIndex}&pageSize=${pageSize}`);
             console.log('responese', response);
-            dispatch(slice.actions.getOrderList(response.data.data));
+            dispatch(slice.actions.getOrderList(response.data));
         } catch (error) {
             dispatch(slice.actions.hasError(error));
         }
     };
+
+
 }
 export function getOrderDetail(orderId) {
     return async (dispatch) => {
@@ -130,8 +175,8 @@ export function createOrder(values, callback) {
         dispatch(slice.actions.startLoading());
         try {
             const response = await axios.post(`/api/v1.0/packages`, values);
-            dispatch(slice.actions.createOrder(response.data.data));
             console.log('check create', response);
+            dispatch(slice.actions.createOrder(response.data.data));
             callback({ success: response.data.success, message: response.data.message })
 
         } catch (error) {
@@ -171,7 +216,7 @@ export function confirmDeliverySuccess(id, callback) {
     return async (dispatch) => {
         dispatch(slice.actions.startLoading());
         try {
-            const response = await axios.put(`/api/v1.0/packages/shop-confirm-delivery-success?packageId=${id}`);
+            const response = await axios.put(`/api/v1.0/packages/sender-confirm-delivery-success?packageId=${id}`);
             callback({ response: response.data })
             dispatch(slice.actions.changeCurrentPackageStatus(PackageStatus.confirmDeliverySuccess))
 
@@ -185,9 +230,9 @@ export function cancelPackage(id, callback) {
     return async (dispatch) => {
         dispatch(slice.actions.startLoading());
         try {
-            const response = await axios.put(`/api/v1.0/packages/shop-cancel?packageId=${id}`);
+            const response = await axios.put(`/api/v1.0/packages/sender-cancel?packageId=${id}`);
             callback({ response: response.data })
-            dispatch(slice.actions.changeCurrentPackageStatus(PackageStatus.shopCancel))
+            dispatch(slice.actions.changeCurrentPackageStatus(PackageStatus.senderCancel))
 
         } catch (error) {
             callback(error.response.data)

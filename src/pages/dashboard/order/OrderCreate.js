@@ -5,7 +5,7 @@ import { useParams, useLocation } from 'react-router-dom';
 import { Container } from '@mui/material';
 // redux
 import { useDispatch, useSelector } from '../../../redux/store';
-import { getOrderDetail, getOrderListByShopId } from '../../../redux/slices/order';
+import { getOrderDetail } from '../../../redux/slices/order';
 // routes
 
 // hooks
@@ -50,18 +50,18 @@ export default function OrderCreate() {
     }, [currentOrder])
 
     return (
-        <Page title="Order: Create a new order | Minimal-UI">
+        <Page title="Package: Create new package | Ship Convenient">
             <Container maxWidth={themeStretch ? false : 'lg'}>
                 {loading ?
                     <LoadingScreen sx={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }} />
                     : (
                         <>
                             <HeaderBreadcrumbs
-                                heading={!isEdit ? 'Create a new order' : 'Edit order'}
+                                heading={!isEdit ? 'Create new package' : 'Edit package'}
                                 links={[
                                     { name: 'Dashboard', href: PATH_DASHBOARD.root },
-                                    { name: 'Order', href: PATH_DASHBOARD.order.root },
-                                    { name: !isEdit ? 'New order' : id }
+                                    { name: 'Package', href: PATH_DASHBOARD.order.root },
+                                    { name: !isEdit ? 'New package' : id }
                                 ]}
                             />
 

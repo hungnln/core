@@ -19,21 +19,22 @@ export const PackageStatus = {
   waiting: 'WAITING',
   approved: 'APPROVED',
   reject: 'REJECT',
-  shipperPickup: 'SHIPPER_PICKUP',
-  shipperCancel: 'SHIPPER_CANCEL',
+  deliverPickup: 'DELIVER_PICKUP',
+  deliverCancel: 'DELIVER_CANCEL',
   delivery: 'DELIVERY',
   delivered: 'DELIVERED',
   deliveryFailed: 'DELIVERY_FAILED',
-  shopConfirmDelivered: 'SHOP_CONFIRM_DELIVERED',
+  senderConfirmDelivered: 'SENDER_CONFIRM_DELIVERED',
   refundSuccess: 'REFUND_SUCCESS',
   refundFailed: 'REFUND_FAILED',
   notExist: 'NOT_EXIST',
-  shopCancel: 'SHOP_CANCEL'
+  senderCancel: 'SENDER_CANCEL'
 }
 export const userRole = {
-  admin: 'AMDIN',
-  shipper: 'SHIPPER',
-  shop: 'SHOP'
+  admin: 'ADMIN',
+  user: 'USER',
+  deliver: 'DELIVER',
+  sender: 'SENDER'
 }
 export const DOMAIN = 'https://ship-convenient.azurewebsites.net'
 export const ACCESSTOKEN = 'accessToken'

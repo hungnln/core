@@ -149,7 +149,7 @@ export default function OrderPreviewForm() {
           </Grid>
           <Grid item xs={6} mb={5}>
             <Typography variant='overline' sx={{ color: 'text.secondary', mb: 2 }}>PACKAGES FROM</Typography>
-            <Typography variant='body2'>{sender?.infoUser.firstName} {sender?.infoUser.lastName}</Typography>
+            <Typography variant='body2'>{sender?.infoUser.lastName} {sender?.infoUser.firstName}</Typography>
             <Typography variant='body2'>{startAddress}</Typography>
             <Typography variant='body2'>Phone : {sender?.infoUser.phone}</Typography>
           </Grid>
@@ -162,7 +162,7 @@ export default function OrderPreviewForm() {
           </Grid>
           <Grid item xs={6} mb={5}>
             <Typography variant='overline' sx={{ color: 'text.secondary', mb: 2 }}>DATE CREATE </Typography>
-            <Typography variant='body2'>{moment(createdAt).format('DD-MM-YYYY HH:mm')}</Typography>
+            <Typography variant='body2'>{moment.utc(createdAt).utcOffset(7).format('DD-MM-YYYY HH:mm')}</Typography>
 
           </Grid>
           <Grid item xs={6} mb={5}>

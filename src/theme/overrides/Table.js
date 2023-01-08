@@ -5,12 +5,18 @@ export default function Table(theme) {
     MuiTableRow: {
       styleOverrides: {
         root: {
-          '&.Mui-selected': {
-            backgroundColor: theme.palette.action.selected,
-            '&:hover': {
-              backgroundColor: theme.palette.action.hover
-            }
-          }
+          '&:nth-of-type(even)': {
+            backgroundColor: theme.palette.action.hover,
+          },
+          '&:hover': {
+            backgroundColor: theme.palette.action.focus
+          },
+          // '&.Mui-selected': {
+          //   backgroundColor: theme.palette.action.selected,
+          //   '&:hover': {
+          //     backgroundColor: theme.palette.action.focus
+          //   }
+          // }
         }
       }
     },

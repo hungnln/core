@@ -55,7 +55,7 @@ const slice = createSlice({
         createOrder(state, action) {
             state.isLoading = false;
             state.error = false;
-            const {data,paginated} = state.orderList
+            const { data, paginated } = state.orderList
             const newTotalCount = paginated.totalCount + 1 || 1
             const newData = [...data, action.payload]
             const newOrderList = {
@@ -218,7 +218,7 @@ export function confirmDeliverySuccess(id, callback) {
         try {
             const response = await axios.put(`/api/v1.0/packages/sender-confirm-delivery-success?packageId=${id}`);
             callback({ response: response.data })
-            dispatch(slice.actions.changeCurrentPackageStatus(PackageStatus.confirmDeliverySuccess))
+            dispatch(slice.actions.changeCurrentPackageStatus(PackageStatus.senderConfirmDelivered))
 
         } catch (error) {
             callback(error.response.data)

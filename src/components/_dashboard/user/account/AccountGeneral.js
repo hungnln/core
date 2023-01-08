@@ -13,6 +13,8 @@ import { UploadAvatar } from '../../../upload';
 import { fData } from '../../../../utils/formatNumber';
 //
 import countries from '../countries';
+import MuiPhoneNumber from 'material-ui-phone-number';
+import { userRole } from 'src/config';
 
 // ----------------------------------------------------------------------
 
@@ -22,23 +24,23 @@ export default function AccountGeneral() {
   const { user, updateProfile } = useAuth();
 
   const UpdateUserSchema = Yup.object().shape({
-    displayName: Yup.string().required('Name is required')
+    phone: Yup.string().length(12).required('Phone is required'),
+    firstName: Yup.string().required('First name is required'),
+    lastName: Yup.string().required('Last name is required'),
   });
-
+  const isAdmin = user.role === userRole.admin
   const formik = useFormik({
     enableReinitialize: true,
     initialValues: {
-      displayName: user.displayName || '',
-      email: user.infoUser.email,
-      photoURL: user.infoUser.photoUrl,
-      phoneNumber: user.infoUser.phone,
-      country: user.country,
-      address: user.address,
-      state: user.state,
-      city: user.city,
-      zipCode: user.zipCode,
-      about: user.about,
-      isPublic: user.isPublic
+      accountId: user.id,
+      userName: user.displayName,
+      firstName: user.infoUser?.firstName,
+      lastName: user.infoUser?.lastName,
+      email: user.infoUser?.email,
+      phone: user.infoUser?.phone,
+      photoUrl: 'string',
+      gender: 'MALE',
+
     },
 
     validationSchema: UpdateUserSchema,
@@ -64,7 +66,7 @@ export default function AccountGeneral() {
     (acceptedFiles) => {
       const file = acceptedFiles[0];
       if (file) {
-        setFieldValue('photoURL', {
+        setFieldValue('photoUrl', {
           ...file,
           preview: URL.createObjectURL(file)
         });
@@ -72,7 +74,9 @@ export default function AccountGeneral() {
     },
     [setFieldValue]
   );
-
+  const handleChangePhoneNumber = (value) => {
+    formik.setFieldValue('phone', value);
+  }
   return (
     <FormikProvider value={formik}>
       <Form autoComplete="off" noValidate onSubmit={handleSubmit}>
@@ -81,10 +85,10 @@ export default function AccountGeneral() {
             <Card sx={{ py: 10, px: 3, textAlign: 'center' }}>
               <UploadAvatar
                 accept="image/*"
-                file={values.photoURL}
+                file={values.photoUrl}
                 maxSize={3145728}
                 onDrop={handleDrop}
-                error={Boolean(touched.photoURL && errors.photoURL)}
+                error={Boolean(touched.photoUrl && errors.photoUrl)}
                 caption={
                   <Typography
                     variant="caption"
@@ -103,7 +107,7 @@ export default function AccountGeneral() {
               />
 
               <FormHelperText error sx={{ px: 2, textAlign: 'center' }}>
-                {touched.photoURL && errors.photoURL}
+                {touched.photoUrl && errors.photoUrl}
               </FormHelperText>
 
               <FormControlLabel
@@ -118,47 +122,28 @@ export default function AccountGeneral() {
           <Grid item xs={12} md={8}>
             <Card sx={{ p: 3 }}>
               <Stack spacing={{ xs: 2, md: 3 }}>
-                <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
-                  <TextField fullWidth label="Name" {...getFieldProps('displayName')} />
-                  <TextField fullWidth disabled label="Email Address" {...getFieldProps('email')} />
-                </Stack>
-
-                <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
-                  <TextField fullWidth label="Phone Number" {...getFieldProps('phoneNumber')} />
-                  <TextField fullWidth label="Address" {...getFieldProps('address')} />
-                </Stack>
-
-                <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
-                  <TextField
-                    select
-                    fullWidth
-                    label="Country"
-                    placeholder="Country"
-                    {...getFieldProps('country')}
-                    SelectProps={{ native: true }}
-                    error={Boolean(touched.country && errors.country)}
-                    helperText={touched.country && errors.country}
-                  >
-                    <option value="" />
-                    {countries.map((option) => (
-                      <option key={option.code} value={option.label}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </TextField>
-                  <TextField fullWidth label="State/Region" {...getFieldProps('state')} />
-                </Stack>
-
-                <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
-                  <TextField fullWidth label="City" {...getFieldProps('city')} />
-                  <TextField fullWidth label="Zip/Code" {...getFieldProps('zipCode')} />
-                </Stack>
-
-                <TextField {...getFieldProps('about')} fullWidth multiline minRows={4} maxRows={4} label="About" />
+                <TextField fullWidth disabled label="Username" {...getFieldProps('userName')} />
+                {!isAdmin && (
+                  <>
+                    <TextField fullWidth disabled label="Email Address" {...getFieldProps('email')} />
+                    <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
+                      <TextField fullWidth label="Last Name" {...getFieldProps('lastName')}
+                        error={Boolean(touched.lastName && errors.lastName)}
+                        helperText={touched.lastName && errors.lastName} />
+                      <TextField fullWidth label="First Name" {...getFieldProps('firstName')}
+                        error={Boolean(touched.firstName && errors.firstName)}
+                        helperText={touched.firstName && errors.firstName} />
+                    </Stack>
+                    <MuiPhoneNumber label="Phone Number" {...getFieldProps('phone')} variant="outlined" defaultCountry='vn' onChange={handleChangePhoneNumber}
+                      error={Boolean(touched.phone && errors.phone)}
+                      helperText={touched.phone && errors.phone}
+                    />
+                  </>
+                )}
               </Stack>
 
               <Box sx={{ mt: 3, display: 'flex', justifyContent: 'flex-end' }}>
-                <LoadingButton type="submit" variant="contained" loading={isSubmitting}>
+                <LoadingButton disabled={isAdmin} type="submit" variant="contained" loading={isSubmitting}>
                   Save Changes
                 </LoadingButton>
               </Box>

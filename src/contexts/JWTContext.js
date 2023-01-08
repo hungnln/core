@@ -60,6 +60,14 @@ const handlers = {
       isAuthenticated: true,
       user
     };
+  },
+  UPDATEINFO: (state, action) => {
+    const { user } = action.payload;
+    return {
+      ...state,
+      isAuthenticated: true,
+      user
+    }
   }
 };
 
@@ -334,7 +342,29 @@ function AuthProvider({ children }) {
   };
   const resetPassword = () => { };
 
-  const updateProfile = () => { };
+  const updateProfile = async (values, callback) => {
+    try {
+      const response = await axios.put('/api/v1.0/accounts/info', values)
+      const { account } = response.data.data;
+      const { id,userName, infoUser, status, balance, role } = account;
+      dispatch({
+        type: 'UPDATEINFO',
+        payload: {
+          user: {
+            id,
+            displayName: userName,
+            role,
+            photoURL: null,
+            balance,
+            status,
+            infoUser
+          }
+        }
+      });
+    } catch (error) {
+      callback(error.response.data)
+    }
+  };
 
   return (
     <AuthContext.Provider

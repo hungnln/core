@@ -30,11 +30,42 @@ export const PackageStatus = {
   notExist: 'NOT_EXIST',
   senderCancel: 'SENDER_CANCEL'
 }
+
 export const userRole = {
   admin: 'ADMIN',
   user: 'USER',
   deliver: 'DELIVER',
   sender: 'SENDER'
+}
+export const switchStatus = (key) => {
+  switch (key) {
+    case 'WAITING':
+      return 'Chờ xác nhận'
+    case 'APPROVED':
+      return 'Đã xác nhận'
+    case 'DELIVER_PICKUP':
+      return 'Đang lấy hàng'
+    case 'DELIVER_CANCEL':
+      return 'Hủy lấy hàng'
+    case 'DELIVERY':
+      return 'Đang giao hàng'
+    case 'DELIVERY_FAILED':
+      return 'Giao hàng thất bại'
+    case 'DELIVERED':
+      return 'Đã giao hàng'
+    case 'SENDER_CONFIRM_DELIVERED':
+      return 'Thành công'
+    case 'REFUND_SUCCESS':
+      return 'Hoàn tiền thành công'
+    case 'REFUND_FAILED':
+      return 'Hoàn tiền thất bại'
+    case 'NOT_EXIST':
+      return 'Không tồn tại'
+    default:
+      return 'Hủy đơn'
+  }
+
+
 }
 export const DOMAIN = 'https://ship-convenient.azurewebsites.net'
 export const ACCESSTOKEN = 'accessToken'

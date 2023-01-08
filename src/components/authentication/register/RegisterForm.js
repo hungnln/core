@@ -136,18 +136,18 @@ export default function RegisterForm() {
             <TextField
               fullWidth
               autoComplete='name'
-              label="First Name"
-              {...getFieldProps('firstName')}
-              error={Boolean(touched.firstName && errors.firstName)}
-              helperText={touched.firstName && errors.firstName}
-            />
-            <TextField
-              fullWidth
-              autoComplete='name'
               label="Last Name"
               {...getFieldProps('lastName')}
               error={Boolean(touched.lastName && errors.lastName)}
               helperText={touched.lastName && errors.lastName}
+            />
+            <TextField
+              fullWidth
+              autoComplete='name'
+              label="First Name"
+              {...getFieldProps('firstName')}
+              error={Boolean(touched.firstName && errors.firstName)}
+              helperText={touched.firstName && errors.firstName}
             />
           </Stack>
 

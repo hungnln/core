@@ -35,7 +35,7 @@ import SearchNotFound from 'src/components/SearchNotFound';
 import { useDispatch, useSelector } from 'src/redux/store';
 import { token } from 'src/utils/axios';
 import useAuth from 'src/hooks/useAuth';
-import { PackageStatus, userRole } from 'src/config';
+import { PackageStatus, switchStatus, userRole } from 'src/config';
 import moment from 'moment/moment';
 import { fCurrency } from 'src/utils/formatNumber';
 // redux
@@ -291,7 +291,7 @@ export default function OrderList() {
                                         // const isItemSelected = selected.indexOf(name) !== -1;                                     
                                         return (
                                             <TableRow
-                                                hover
+                                                // hover
                                                 key={id}
                                                 tabIndex={-1}
                                             // role="checkbox"
@@ -352,10 +352,11 @@ export default function OrderList() {
                                                 {/* <TableCell align="left">{isVerified ? 'Yes' : 'No'}</TableCell> */}
                                                 <TableCell align="left">
                                                     <Label
+                                                        sx={{ width: '100%' }}
                                                         variant={theme.palette.mode === 'light' ? 'ghost' : 'filled'}
                                                         color={((status === PackageStatus.deliveryFailed || status === PackageStatus.reject || status === PackageStatus.senderCancel || status === PackageStatus.deliverCancel) && 'error') || (status === PackageStatus.waiting && 'warning') || 'success'}
                                                     >
-                                                        {sentenceCase(status)}
+                                                        {(switchStatus(status))}
                                                     </Label>
                                                 </TableCell>
 

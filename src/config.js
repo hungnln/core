@@ -75,7 +75,7 @@ export const userStatus = {
 }
 export const defaultId = '00000000-0000-0000-0000-000000000000'
 export const GOOGLE_MAPS_API_KEY = 'AIzaSyDyiGQYQgykVRVpeqCWXtqn5l4At9vGp04'
-
+export const MAPBOX_ACCESS_TOKEN = 'pk.eyJ1Ijoibmd1eWVuaHVuZzA5MDgiLCJhIjoiY2w5bGExZnZ6MHY5bTNwbWd4eHV2aW5lNCJ9.VitcdZOLOTeyJJEGjD0h4Q'
 export const cognitoConfig = {
   userPoolId: process.env.REACT_APP_AWS_COGNITO_USER_POOL_ID,
   clientId: process.env.REACT_APP_AWS_COGNITO_CLIENT_ID

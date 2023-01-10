@@ -29,6 +29,8 @@ import _ from 'lodash';
 import useAuth from 'src/hooks/useAuth';
 import GoogleMaps from '../map/GoogleMaps';
 import SenderAddressNewForm from './SenderAddressNewForm';
+import axios from 'axios';
+import { MAPBOX_ACCESS_TOKEN } from 'src/config';
 // ----------------------------------------------------------------------
 
 OrderNewForm.propTypes = {
@@ -129,11 +131,11 @@ export default function OrderNewForm({ isEdit, currentOrder }) {
       destinationLatitude: currentOrder?.destinationLatitude || null,
       receiverName: currentOrder?.receiverName || '',
       receiverPhone: currentOrder?.receiverPhone || '',
-      distance: currentOrder?.distance || 100,
+      distance: currentOrder?.distance || 0,
       volume: currentOrder?.volume || 0,
       weight: currentOrder?.weight || 0,
       status: currentOrder?.status || '',
-      priceShip: currentOrder?.priceShip || 10000,
+      priceShip: currentOrder?.priceShip || 0,
       photoUrl: currentOrder?.photoUrl || '',
       note: currentOrder?.note || '',
       senderId: currentOrder?.senderId || user.id,
@@ -194,6 +196,23 @@ export default function OrderNewForm({ isEdit, currentOrder }) {
     formik.setValues(newValues)
 
   }
+  const checkDistance = () => {
+    axios.get(`https://api.mapbox.com/directions/v5/mapbox/driving/${values.startLongitude},${values.startLatitude};${values.destinationLongitude},${values.destinationLatitude}.json?access_token=${MAPBOX_ACCESS_TOKEN}`)
+      .then((response) => {
+        const distance = response.data.routes[0].distance / 1000;
+        console.log('distance', distance);
+        formik.setFieldValue('distance', distance)
+        if (distance <= 10) {
+          formik.setFieldValue('priceShip', 14000)
+        } else if (distance <= 15) {
+          formik.setFieldValue('priceShip', 20300)
+        } else if (distance <= 20) {
+          formik.setFieldValue('priceShip', 24500)
+        } else {
+          formik.setFieldValue('priceShip', 30000)
+        }
+      })
+  }
   const handleChangeStartAddess = (callback) => {
     if (callback) {
       const { longitude, latitude, name } = callback;
@@ -206,6 +225,11 @@ export default function OrderNewForm({ isEdit, currentOrder }) {
       formik.setFieldValue('startAddress', '');
     }
   }
+  useEffect(() => {
+    if (values.startLongitude !== null && values.startLatitude !== null && values.destinationLongitude !== null && values.destinationLatitude !== null) {
+      checkDistance()
+    }
+  }, [values.startLongitude, values.startLatitude, values.destinationLongitude, values.destinationLatitude])
   return (
     <>
       {/* Start stepper  */}
@@ -249,7 +273,7 @@ export default function OrderNewForm({ isEdit, currentOrder }) {
               </Stack>
             </Paper>
           )}
-          {activeStep === 2 && (
+          {(activeStep === 2 || allStepsCompleted()) && (
             <FormikProvider value={formik}>
               <Form noValidate autoComplete="off" onSubmit={handleSubmit}>
                 <Paper elevation={0} variant="outlined" sx={{ mt: 4, mb: 1, py: 1 }}>
@@ -263,6 +287,7 @@ export default function OrderNewForm({ isEdit, currentOrder }) {
                           sx={{ mb: 1 }}
                         >
                           <Typography variant='h6' sx={{ color: 'text.secondary' }}>From:</Typography>
+                          <Button variant="text" size='small' startIcon={<EditLocationAltIcon />} onClick={handleStep(0)}>Change</Button>
 
                         </Stack>
                         <Typography variant='subtitle2'>{infoUser.firstName} {infoUser.lastName}</Typography>
@@ -280,7 +305,7 @@ export default function OrderNewForm({ isEdit, currentOrder }) {
                           sx={{ mb: 1 }}
                         >
                           <Typography variant='h6' sx={{ color: 'text.secondary' }}>To:</Typography>
-                          <Button variant="text" size='small' startIcon={<EditLocationAltIcon />} onClick={handleCloseModal}>Change</Button>
+                          <Button variant="text" size='small' startIcon={<EditLocationAltIcon />} onClick={handleStep(1)}>Change</Button>
                         </Stack>
                         {Boolean(errors.destinationAddress || errors.destinationLatitude || errors.destinationLongitude || errors.receiverName || errors.receiverPhone) && (
                           <Typography variant='caption' sx={{ color: 'error.main' }}>* Please fill receiver's information</Typography>
@@ -307,6 +332,16 @@ export default function OrderNewForm({ isEdit, currentOrder }) {
                         endAdornment: (
                           <InputAdornment position="end">
                             kg
+                          </InputAdornment>
+                        )
+                      }} />
+                    <TextField disabled type='number' label="Distance" variant="outlined" sx={{ width: '100px' }} {...getFieldProps('distance')} error={Boolean(touched.volume && errors.volume)}
+                      helperText={touched.distance && errors.distance}
+                      InputProps={{
+                        shrink: true,
+                        endAdornment: (
+                          <InputAdornment position="end">
+                            km
                           </InputAdornment>
                         )
                       }} />
